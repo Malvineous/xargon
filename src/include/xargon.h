@@ -11,13 +11,13 @@
 
 extern vptype gamevp, statvp, textvp, tempvp;
 extern int scrnxs,scrnys;
-extern int bd [boardxs][boardys];
+extern uint16_t bd [boardxs][boardys];
 
 #define board(x,y) (bd[x][y]&0x3fff)
 #define modboard(x,y) bd[x][y]|=mod_screen;
 #define setboard(x,y,n) bd[x][y]=n|mod_screen;
 
-extern int scrollxd, scrollyd, oldscrollxd, oldscrollyd, oldx0, oldy0;
+extern int16_t scrollxd, scrollyd, oldscrollxd, oldscrollyd, oldx0, oldy0;
 extern char newlevel[16],curlevel[16];
 
 // for non-pageflipping:
@@ -33,8 +33,8 @@ extern char newlevel[16],curlevel[16];
 #define mod_board 4				// if contents of board has changed
 
 typedef struct {
-	int sh;
-	int flags;
+	int16_t sh;
+	int16_t flags;
 	char *na;
 	} infotype;
 
@@ -67,14 +67,14 @@ int msg_block (int x, int y, int msg);
 #define msg_trigon 5
 
 typedef struct {
-	int level;
-	int health;
-	int emeralds;
-	int numinv;
-	int inv[30];					// Inventory
-	int ouched;
+	int16_t level;
+	int16_t health;
+	int16_t emeralds;
+	int16_t numinv;
+	int16_t inv[30];					// Inventory
+	int16_t ouched;
 	char pad[22];
-	unsigned long score;
+	uint32_t score;
 	} pltype;
 
 // Inventory
@@ -103,15 +103,15 @@ extern const char *inv_getmsg[numinvkinds];
 
 // GAME OBJECTS
 typedef struct {
-	char objkind;
-	int x, y;
-	int xd, yd;
-	int xl,yl;
-	int state, substate, statecount, counter;
-	int objflags;
+	uint8_t objkind;
+	int16_t x, y;
+	int16_t xd, yd;
+	int16_t xl,yl;
+	int16_t state, substate, statecount, counter;
+	int16_t objflags;
 	char *inside;
-	int info1;						// player=lastxd
-	int zaphold;
+	int16_t info1;						// player=lastxd
+	int16_t zaphold;
 	} objtype;
 
 #define maxobjs 256
@@ -119,7 +119,7 @@ typedef struct {
 
 // STATES
 #define numstates 8
-extern int stateinfo [numstates];
+extern int16_t stateinfo [numstates];
 #define sti_canfire 1
 #define sti_invincible 2
 
@@ -146,18 +146,18 @@ extern int stateinfo [numstates];
 
 extern infotype info[numinfotypes];
 extern int (*kindmsg[numobjkinds])(int n, int msg, int z);
-extern int kindxl[numobjkinds];
-extern int kindyl[numobjkinds];
+extern int16_t kindxl[numobjkinds];
+extern int16_t kindyl[numobjkinds];
 extern char *kindname[numobjkinds];
-extern int kindflags[numobjkinds];
-extern int kindtable[numobjkinds];
-extern int kindscore[numobjkinds];
+extern int16_t kindflags[numobjkinds];
+extern int16_t kindtable[numobjkinds];
+extern int16_t kindscore[numobjkinds];
 
 extern objtype objs [maxobjs+2];
-extern int numobjs, numscrnobjs;
-extern int scrnobjs [maxscrnobjs];
+extern int16_t numobjs, numscrnobjs;
+extern int16_t scrnobjs [maxscrnobjs];
 extern int designflag;
-extern int gameover, gamecount, statmodflg;
+extern int16_t gameover, gamecount, statmodflg;
 extern int peeky;
 extern char cnt_fruit, old_fruit, icon_fruit; // extra health for 16 fruits
 
@@ -201,7 +201,7 @@ void purgeobjs (void);
 void zapobjs (void);
 void setobjsize (int n);
 void addscore (int sc, int x, int y);
-void seekplayer (int n, int *dx, int *dy);
+void seekplayer (int n, int16_t *dx, int16_t *dy);
 
 int findcheckpt (int n);
 int trymove (int n, int newx, int newy);

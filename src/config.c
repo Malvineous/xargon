@@ -5,19 +5,20 @@
 //		17819 (386-16)
 //		36392 (386-33)
 
-#include <alloc.h>
-#include <conio.h>
+//#include <alloc.h>
+//#include <conio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include "\develop\xargon\include\gr.h"
-#include "\develop\xargon\include\keyboard.h"
-#include "\develop\xargon\include\gamectrl.h"
-#include "\develop\xargon\include\music.h"
-
+#include "include/gr.h"
+#include "include/keyboard.h"
+#include "include/gamectrl.h"
+#include "include/music.h"
+#include "include/config.h"
 int nosnd=0;
 //int cfgdemo=0;
 
+/*
 struct {
 	int firstthru;				// Are we set up?
 	int joyflag0,joyxl0, joyxc0, joyxr0, joyyu0, joyyc0, joyyd0;
@@ -26,6 +27,8 @@ struct {
 	int vocflag0;
 	char pad [64];
 	} cf;
+*/
+config cf;
 
 void cfg_init(int argc, char *argv[]) {
 	int c;
@@ -62,6 +65,7 @@ void cfg_init(int argc, char *argv[]) {
 	};
 
 int doconfig (void) {
+/*
 	int redo;
 	char tempstr[16];
 
@@ -167,5 +171,9 @@ int doconfig (void) {
 	cf.joyyu0=joyyu; cf.joyyc0=joyyc; cf.joyyd0=joyyd;
 	cf.x_ourmode0=x_ourmode;
 	vocflag=cf.vocflag0; musicflag=cf.musicflag0;
+*/
+	joyflag=false;
+	vocflag=true;
+	musicflag=true;
 	return 1;
 	};

@@ -7,11 +7,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
-#include <io.h>
-#include "\develop\xargon\include\gr.h"
-#include "\develop\xargon\include\windows.h"
-#include "\develop\xargon\include\x_obj.h"
-#include "\develop\xargon\include\xargon.h"
+//#include <io.h>
+#include "include/gr.h"
+#include "include/windows.h"
+#include "include/x_obj.h"
+#include "include/xargon.h"
 
 extern char tilefile[];
 

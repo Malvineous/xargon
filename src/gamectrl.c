@@ -1,20 +1,21 @@
 // GAMECTRL.C
 
-#include <dos.h>;
-#include <fcntl.h>;
-#include <ctype.h>;
-#include <string.h>;
-#include <mem.h>;
-#include <conio.h>;
-#include <stdlib.h>;
-#include <io.h>;
-#include "\develop\xargon\include\keyboard.h";
+#include "port.h"
+//#include <dos.h>;
+#include <fcntl.h>
+#include <ctype.h>
+#include <string.h>
+//#include <mem.h>;
+//#include <conio.h>;
+#include <stdlib.h>
+//#include <io.h>;
+#include "include/keyboard.h"
 
 extern int gamecount;
 extern int debug,swrite;
 
 long systime=0;
-extern char *myclock;
+//extern char *myclock;
 extern long longclock;
 
 int dx1, dy1, fire1, fire2, fire1off, fire2off;
@@ -46,6 +47,7 @@ int buttona2 (void) {
 	};
 
 void readspeed (void) {
+/*
 	int oldclock;
 	systime=0;
 	oldclock=*myclock;
@@ -53,6 +55,8 @@ void readspeed (void) {
 	do {systime++;} while ((*myclock-oldclock)<5);
 // Now 5 intervals have passed
 	systime/=4L;
+*/
+	systime = 4096; // dummy
 	};
 
 void readjoy (int *x, int *y) {				// may want to delay...
@@ -129,13 +133,21 @@ void checkctrl (int pollflag) {
 		getmac(); return;
 		};
 
+	SDL_Event event;
+
 	dx1=0; dy1=0;
 	fire1=0; flow1=0;
 	reloop:
 	key=0;
-	if (k_pressed()) {
-		key=k_read();
-		if ((key==0)|(key==1)|(key==2)) key=k_read();
+	//if (k_pressed()) {
+	if (SDL_PollEvent(&event)) {
+		//key=k_read();
+		//if ((key==0)|(key==1)|(key==2)) key=k_read();
+		switch (event.type) {
+			case SDL_KEYDOWN:
+				key = event.key.keysym.scancode; // TODO: Convert
+				break;
+			}
 		};
 	if (key!=0) {
 		switch (key) {
@@ -186,8 +198,8 @@ void checkctrl (int pollflag) {
 
 void checkctrl0 (int pollflag) {
 	static int oldclock=0;
-	do {} while (oldclock==*myclock);
-	oldclock=*myclock;
+	do {} while (oldclock==getclock());
+	oldclock=getclock();
 	checkctrl (pollflag);
 	};
 

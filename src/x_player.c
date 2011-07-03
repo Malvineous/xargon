@@ -4,16 +4,17 @@
 //
 // by Allen W. Pilgrim
 
+#include "port.h"
 #include <stdlib.h>
 #include <string.h>
-#include "\develop\xargon\include\gr.h"
-#include "\develop\xargon\include\keyboard.h"
-#include "\develop\xargon\include\windows.h"
-#include "\develop\xargon\include\gamectrl.h"
-#include "\develop\xargon\include\music.h"
-#include "\develop\xargon\include\x_obj.h"
-#include "\develop\xargon\include\xargon.h"
-#include "\develop\xargon\include\x_snd.h"
+#include "include/gr.h"
+#include "include/keyboard.h"
+#include "include/windows.h"
+#include "include/gamectrl.h"
+#include "include/music.h"
+#include "include/x_obj.h"
+#include "include/xargon.h"
+#include "include/x_snd.h"
 
 extern char *fidgetmsg[4];
 /*int fidgetseq[4][4]={
@@ -83,7 +84,7 @@ int msg_player (int n, int msg, int z) {
 						}
 					else if (pobj->statecount>=(fidgetmax-32)) mod1=1;
 					else if (pobj->statecount==(fidgetmax-42)) {
-						fidgetnum=random(4); txt (fidgetmsg[fidgetnum],6,0);
+						fidgetnum=xr_random(4); txt (fidgetmsg[fidgetnum],6,0);
 						}
 					else if (pobj->statecount==3) mod1=1;
 					if (cando (n,pobj->x,(pobj->y&0xfff0)+16,
@@ -166,7 +167,7 @@ int msg_player (int n, int msg, int z) {
 					}; break;
 			case st_die:
 				if (pobj->substate==die_bird) {
-					pobj->yd=min (pobj->yd++,8); pobj->xd=random(7)-3;
+					pobj->yd=min (pobj->yd++,8); pobj->xd=xr_random(7)-3;
 					justmove (n,pobj->x+pobj->xd,pobj->y+pobj->yd);
 					}
 				else if (pobj->substate==die_fish) {
@@ -473,7 +474,7 @@ int msg_heroswim  (int n, int msg, int z) {
 			pobj->xd=dx1*8;
 			if (onwater) {
 				pobj->yd+=dy1*3+(pobj->yd<2);
-				if (random(15)==0)
+				if (xr_random(15)==0)
 					addobj (obj_bubble,pobj->x+8,pobj->y-2,0,0);
 				pobj->yd=min(8,max(pobj->yd,-8));
 				}

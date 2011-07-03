@@ -42,7 +42,7 @@ int biosstatus (void);
 #define scan_rshift 0x36
 #define scan_alt 0x38
 #define scan_space 0x39
-#define scan_f1= 0x3B
+#define scan_f1 0x3B
 #define scan_cursorup 0x48
 #define scan_cursorleft 0x4B
 #define scan_cursorright 0x4D

@@ -11,16 +11,16 @@ extern unsigned _stklen=8192;
 #include <io.h>
 #include <ctype.h>
 #include <alloc.h>
-#include "\develop\xargon\include\gr.h"
-#include "\develop\xargon\include\keyboard.h"
-#include "\develop\xargon\include\windows.h"
-#include "\develop\xargon\include\gamectrl.h"
-#include "\develop\xargon\include\uncrunch.h"
-#include "\develop\xargon\include\config.h"
-#include "\develop\xargon\include\music.h"
-#include "\develop\xargon\include\x_obj.h"
-#include "\develop\xargon\include\xargon.h"
-#include "\develop\xargon\include\x_snd.h"
+#include "include/gr.h"
+#include "include/keyboard.h"
+#include "include/windows.h"
+#include "include/gamectrl.h"
+#include "include/uncrunch.h"
+#include "include/config.h"
+#include "include/music.h"
+#include "include/x_obj.h"
+#include "include/xargon.h"
+#include "include/x_snd.h"
 
 wintype menu_win;
 vptype gamevp, statvp, textvp, tempvp;

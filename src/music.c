@@ -1,16 +1,16 @@
 // MUSIC.C Unified Sound Unit - Sound Blaster + PC Speaker
 
 #include <stdlib.h>
-#include <conio.h>
-#include <dos.h>
-#include <alloc.h>
+//#include <conio.h>
+//#include <dos.h>
+//#include <alloc.h>
 #include <string.h>
 #include <fcntl.h>
-#include <io.h>
-#include <mem.h>
-#include "\develop\xargon\include\config.h"
-#include "\develop\xargon\include\music.h"
-#include "\develop\xargon\include\worx.h"
+//#include <io.h>
+//#include <mem.h>
+#include "include/config.h"
+#include "include/music.h"
+#include "include/worx.h"
 
 void soundadd (int priority,char *s);
 void sampadd (int instr,int len,int durfactor,int note);
@@ -24,7 +24,7 @@ char *memvoc;						// Size = memvocs*maxvoclen
 int soundoff=1;					// = 1 until set on
 int soundf=1;
 int makesound=0;
-int *myclock=(int*)((long)0x0040006cL);
+//int *myclock=(int*)((long)0x0040006cL);
 int notepriority,samppriority,oldpri;
 int soundcount;
 int SetDSP=0;
@@ -178,7 +178,7 @@ void snd_play (int priority, int num) {
 	};
 
 void snd_do (void) {
-	unsigned j;
+	uint16_t j;
 	int c;
 	int soundhandle;
 	nosound();
@@ -213,7 +213,7 @@ void snd_do (void) {
 			else soundmac[c]=NULL;
 			};
 		SOUNDS=malloc (10480);
-		soundhandle=_open ("AUDIO.EPC",O_BINARY|O_RDONLY);
+		soundhandle=_open ("audio.epc",O_BINARY|O_RDONLY);
 		if (soundhandle==-1) rexit (155);
 		_read (soundhandle,SOUNDS,10400);
 		close (soundhandle);

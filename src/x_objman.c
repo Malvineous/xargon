@@ -4,16 +4,17 @@
 //
 // by Allen W. Pilgrim
 
+#include "port.h"
 #include <stdlib.h>
 #include <string.h>
-#include "\develop\xargon\include\gr.h"
-#include "\develop\xargon\include\keyboard.h"
-#include "\develop\xargon\include\windows.h"
-#include "\develop\xargon\include\gamectrl.h"
-#include "\develop\xargon\include\music.h"
-#include "\develop\xargon\include\x_obj.h"
-#include "\develop\xargon\include\xargon.h"
-#include "\develop\xargon\include\x_snd.h"
+#include "include/gr.h"
+#include "include/keyboard.h"
+#include "include/windows.h"
+#include "include/gamectrl.h"
+#include "include/music.h"
+#include "include/x_obj.h"
+#include "include/xargon.h"
+#include "include/x_snd.h"
 
 //byte updtab [boardxs][20];			// refresh (0) only
 
@@ -170,7 +171,7 @@ void p_ouch (int healthtake, int diemode) {
 		};
 	};
 
-void seekplayer (int n, int *dx, int *dy) {
+void seekplayer (int n, int16_t *dx, int16_t *dy) {
 	*dx=(objs[0].x>objs[n].x)-(objs[0].x<objs[n].x);
 	*dy=(objs[0].y>objs[n].y)-(objs[0].y<objs[n].y);
 	};
@@ -409,10 +410,10 @@ void upd_bkgnd (void) {
 	};
 
 void upd_objs (int doflag) {
-	int countn,count2;
-	int n,n2;
-	int flag,oldx,oldy,oldxl,oldyl;
-	int x,y,startx,endx,starty,endy;
+	int16_t countn,count2;
+	int16_t n,n2;
+	int16_t flag,oldx,oldy,oldxl,oldyl;
+	int16_t x,y,startx,endx,starty,endy;
 
 // Determine which objs are on screen
 
@@ -434,7 +435,7 @@ void upd_objs (int doflag) {
 // Update objects & Handle TOUCH
 
 	for (countn=0; countn<numscrnobjs; countn++) {
-		n=scrnobjs[countn]; 
+		n=scrnobjs[countn];
 		oldx=objs[n].x; oldy=objs[n].y;
 		oldxl=objs[n].xl; oldyl=objs[n].yl;
 		if (doflag) {
@@ -477,11 +478,12 @@ else {
 			endx=(oldx+oldxl+15)/16; endy=(oldy+oldyl+15)/16;
 			for (y=starty; y<endy; y++) {
 				for (x=startx; x<endx; x++) {
+					//if ((x >= boardxs) || (y >= boardys)) continue; // out of range!
 					bd[x][y]|=mod_screen;
 					};
 				};
 			};
-		};                                
+		};
 
 	for (countn=0; countn<numscrnobjs; countn++) {
 		n=scrnobjs[countn];
@@ -664,8 +666,8 @@ void addscore (int sc,int x,int y) {
 		objs[n].state=sc;
 		objs[n].counter=30;
 //		objs[n].counter=24;
-		objs[n].xd=random(4)*((x>objs[0].x)-(x<objs[0].x));
-		objs[n].yd=random(4)+4;
+		objs[n].xd=xr_random(4)*((x>objs[0].x)-(x<objs[0].x));
+		objs[n].yd=xr_random(4)+4;
 		setobjsize(n);
 		};
 	pl.score+=sc; statmodflg|=mod_screen;
@@ -767,7 +769,7 @@ void touchbkgnd (int n) {
 			if (info[board(x,y)].flags&f_msgtouch) msg_block(x,y,msg_touch);
 			else if ((board(x,y+1)>=crum1)&&(board(x,y+1)<=crum_last)&&
 				((gamecount&3)==2)) {
-				addobj (obj_fragexpl,objs[n].x+random(10),objs[n].y+44,0,2);
+				addobj (obj_fragexpl,objs[n].x+xr_random(10),objs[n].y+44,0,2);
 				objs[numobjs-1].state=-1;
 				setboard (x,y+1,board(x,y+1)+1);
 				if (board(x,y+1)>crum_last) setboard(x,y+1,0);

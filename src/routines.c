@@ -1,5 +1,10 @@
 // Routines that may be needed for game
 
+//#include "port.h"
+#include "include/gr.h"
+#include "include/x_obj.h"
+#include "include/xargon.h"
+
 void calc_scroll (int peeky) {
 	int xscroll=8,vpytop,vpybot,vpypeek;
 	objtype *obj0;	obj0=&(objs[0]);

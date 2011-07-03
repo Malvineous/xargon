@@ -1,12 +1,12 @@
 // GR.C: Graphics Driver Controller
 
-#include <stdlib.h>;
-#include <dos.h>;
-#include <conio.h>;
-#include <mem.h>;
-#include <ctype.h>;
-#include "\develop\xargon\include\gr.h";
-#include "\develop\xargon\include\keyboard.h";
+#include <stdlib.h>
+//#include <dos.h>
+//#include <conio.h>
+//#include <mem.h>
+#include <ctype.h>
+#include "include/gr.h"
+#include "include/keyboard.h"
 
 #define Red 0
 #define Green 1
@@ -145,7 +145,8 @@ void drawshape (vptype *vp, int n, int x, int y) {
 		};
 	if (shm_tbladdr[nt]!=LOST) {
 		tblptr=(shm_tbladdr [nt])+(ns*4);
-		shapeptr=shm_tbladdr [nt]+*(int*) tblptr;
+		//shapeptr=shm_tbladdr [nt]+*(int*) tblptr;
+		shapeptr=shm_tbladdr [nt]+*(uint16_t*) tblptr;
 		xlb=(char) *(tblptr+2); yl=(char) *(tblptr+3);
 		x-=vp->vpox; y-=vp->vpoy;
 		if ((y<vp->vpyl)&&((y+yl)>=0)&&
@@ -164,6 +165,7 @@ void plot (vptype *vp, int x, int y, int color) {
 	};
 
 void waitsafe (void) {
+return;
 	do {} while (!(inportb(0x3da)&8));
 	};
 
@@ -214,6 +216,8 @@ int getportnum (void) {
 	};
 
 void pageflip (void) {
+	//SDL_Flip(::screen);
+return;
 	int portnum;
 	pageshow=!pageshow;
 	pagedraw=!pagedraw;
@@ -227,6 +231,7 @@ void pageflip (void) {
 	};
 
 void wait_vbi(void) {
+return;
 	do {} while ((inportb(0x3da)&8)!=0);
 	do {} while ((inportb(0x3da)&8)==0);
 	};
@@ -238,12 +243,21 @@ void vga_setpal(void) {
 
 	if ((start>256)||(start<0)||((start+number)>256)) return;
 	waitsafe();
+	SDL_Color clr[256];
+	/*
 	for (i=start;i<(start+number);i++) {
 		outportb(DacWrite,i);
 		outportb(DacData,vgapal[i*3+Red]);
 		outportb(DacData,vgapal[i*3+Green]);
 		outportb(DacData,vgapal[i*3+Blue]);
+		*/
+	for (i=0;i<number;i++) {
+		clr[i].r = pal6to8(vgapal[i*3+Red  ]);
+		clr[i].g = pal6to8(vgapal[i*3+Green]);
+		clr[i].b = pal6to8(vgapal[i*3+Blue ]);
 		};
+
+	SDL_SetPalette(::screen, SDL_LOGPAL | SDL_PHYSPAL, clr, start, number);
 	};
 
 void readpal(p_rec palette) {
@@ -261,6 +275,7 @@ void readpal(p_rec palette) {
 	};
 
 void clrpal(void) {
+	/*
 	unsigned int i;
 	int start=0;
 	int number=256;
@@ -271,44 +286,72 @@ void clrpal(void) {
 		outportb(DacData,0);
 		outportb(DacData,0);
 		};
+	*/
+	SDL_Color clr[256];
+	memset(clr, 0, sizeof(clr));
+	SDL_SetPalette(::screen, SDL_LOGPAL | SDL_PHYSPAL, clr, 0, 256);
 	};
 
 void fadein(void) {
-	p_rec currentpal;
+	//p_rec currentpal;
+	SDL_Color currentpal[256];
 	int temp, i, cycle;
 
 	for (cycle=0;cycle<64;cycle+=2) {
-		for (i=0;i<(256*3);i++){
-			temp=vgapal[i];
-			temp=(temp*cycle)>>6;
-			currentpal[i]=temp;
+		//for (i=0;i<(256*3);i++){
+		for (i=0;i<256;i++){
+			//temp=vgapal[i];
+			//temp=(temp*cycle)>>6;
+			//currentpal[i]=temp;
+			currentpal[i].r = (pal6to8(vgapal[i*3+Red  ]) * cycle) >> 6;
+			currentpal[i].g = (pal6to8(vgapal[i*3+Green]) * cycle) >> 6;
+			currentpal[i].b = (pal6to8(vgapal[i*3+Blue ]) * cycle) >> 6;
 			};
 		waitsafe();
-		outportb(DacWrite,0);
-		for (i=0;i<(256*3);i++) outportb(DacData,currentpal[i]);
+		//outportb(DacWrite,0);
+		//for (i=0;i<(256*3);i++) outportb(DacData,currentpal[i]);
+		SDL_SetPalette(::screen, SDL_LOGPAL | SDL_PHYSPAL, currentpal, 0, 256);
+		// TODO: Delay
+		usleep(750/64*1000);
 		};
+	printf("fadein done\n");
 	};
 
 void setcolor (int c, int n1, int n2, int n3) {
+	/*
 	outportb (DacWrite,c);
 	outportb (DacData, n1);
 	outportb (DacData, n2);
 	outportb (DacData, n3);
+	*/
+	SDL_Color n;
+	n.r = pal6to8(n1);
+	n.g = pal6to8(n2);
+	n.b = pal6to8(n3);
+	SDL_SetPalette(::screen, SDL_LOGPAL | SDL_PHYSPAL, &n, c, 1);
 	};
 
 void fadeout(void) {
-	p_rec currentpal;
+	//p_rec currentpal;
+	SDL_Color currentpal[256];
 	int i, temp, cycle;
 
 	for (cycle=63;cycle>=0;cycle-=2) {
-		for (i=0;i<256*3;i++){
-			temp=vgapal[i];
-			temp=(temp*cycle)>>6;
-			currentpal[i]=temp;
+		//for (i=0;i<256*3;i++){
+		for (i=0;i<256;i++){
+			//temp=vgapal[i];
+			//temp=(temp*cycle)>>6;
+			//currentpal[i]=temp;
+			currentpal[i].r = (pal6to8(vgapal[i*3+Red  ]) * cycle) >> 6;
+			currentpal[i].g = (pal6to8(vgapal[i*3+Green]) * cycle) >> 6;
+			currentpal[i].b = (pal6to8(vgapal[i*3+Blue ]) * cycle) >> 6;
 			};
 		waitsafe();
-		outportb(DacWrite,0);
-		for (i=0;i<256*3;i++) outportb(DacData,currentpal[i]);
+		//outportb(DacWrite,0);
+		//for (i=0;i<256*3;i++) outportb(DacData,currentpal[i]);
+		SDL_SetPalette(::screen, SDL_LOGPAL | SDL_PHYSPAL, currentpal, 0, 256);
+		// TODO: Delay
+		usleep(750/64*1000);
 		};
 	};
 

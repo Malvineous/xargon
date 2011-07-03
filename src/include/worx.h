@@ -5,6 +5,7 @@
  *   All rights reserved.                    * 
  *********************************************/
 
+#include "../port.h"
 #ifdef __cplusplus
 extern "C" {
 #endif

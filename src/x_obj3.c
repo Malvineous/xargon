@@ -4,16 +4,17 @@
 //
 // by Allen W. Pilgrim
 
+#include "port.h"
 #include <stdlib.h>
 #include <string.h>
-#include "\develop\xargon\include\gr.h"
-#include "\develop\xargon\include\keyboard.h"
-#include "\develop\xargon\include\windows.h"
-#include "\develop\xargon\include\gamectrl.h"
-#include "\develop\xargon\include\music.h"
-#include "\develop\xargon\include\x_obj.h"
-#include "\develop\xargon\include\xargon.h"
-#include "\develop\xargon\include\x_snd.h"
+#include "include/gr.h"
+#include "include/keyboard.h"
+#include "include/windows.h"
+#include "include/gamectrl.h"
+#include "include/music.h"
+#include "include/x_obj.h"
+#include "include/xargon.h"
+#include "include/x_snd.h"
 
 int blinkshtab[16]={12,13,14,15,16,17,18,19,19,19,18,17,16,15,14,13};
 int lastwater;
@@ -43,7 +44,7 @@ int msg_block (int x, int y, int msg) {
 				if (board(x,y)>comp3) setboard(x,y,comp1);
 				return (1);
 				}
-			else if (((bk==eyecl)||(bk==eyeop))&&(random(200)==0)) {
+			else if (((bk==eyecl)||(bk==eyeop))&&(xr_random(200)==0)) {
 				if (board(x,y)==eyecl) {setboard(x,y,eyeop); return (1);}
 				else {setboard(x,y,eyecl); return (1);};
 				}
@@ -55,11 +56,11 @@ int msg_block (int x, int y, int msg) {
 				if ((gc<6)||(gc>=12)) info[blink].flags^=f_notstair;
 				return (1);
 				}
-			else if ((bk==arrow1)&&(random(100)==0)) {
+			else if ((bk==arrow1)&&(xr_random(100)==0)) {
 				addobj (obj_arrow,xc+12,yc+6,4,0);
 				snd_play (2,snd_enemyfire);
 				}
-			else if ((bk==arrow2)&&(random(90)==0)) {
+			else if ((bk==arrow2)&&(xr_random(90)==0)) {
 				addobj (obj_arrow,xc-8,yc+6,-4,1);
 				snd_play (2,snd_enemyfire);
 				}

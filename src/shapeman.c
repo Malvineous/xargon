@@ -7,14 +7,14 @@
 //		shm_do   :Prepare shape tables (load/trash) using shm_want[]
 //		shm_exit :Terminate shape manager
 
-#include <stdlib.h>;
-#include <io.h>;
-#include <alloc.h>;
-#include <fcntl.h>;
-#include <string.h>;
-#include <math.h>;
-#include <mem.h>;
-#include "\develop\xargon\include\gr.h";
+#include <stdlib.h>
+//#include <io.h>
+//#include <alloc.h>
+#include <fcntl.h>
+#include <string.h>
+#include <math.h>
+//#include <mem.h>
+#include "include/gr.h";
 
 extern void rexit (int num);
 
@@ -51,18 +51,23 @@ void init8bit (void) {					// Init pallette for numcolorbits=8
 void xlate_table (int n, char *addr, char *bucket1) {
 	unsigned char numshapes=0;
 	char numcolorbits=1;
-	int numrots;
-	long longcolor;
-	int len_cga, len_ega, len_vga, len;
+	//int16_t numrots;
+	uint16_t numrots;
+	int32_t longcolor;
+	//int16_t len_cga, len_ega, len_vga, len;
+	uint16_t len_cga, len_ega, len_vga, len;
 	byte xs, xsb, ys;
 	byte storetype;
 	byte c;
-	int x,y,b,flags;
+	int16_t x,y,b,flags;
+	//uint16_t x,y,flags;
+	//int b;
 	char *bucket,*tempbucket;
 	unsigned char databyte,shapebyte;
 	unsigned int colorand, colorshift;
 	char *dest;
-	int tblofs, dataofs;
+	//int16_t tblofs, dataofs;
+	uint16_t tblofs, dataofs;
 
 	readin (numshapes, addr, 1);
 	readin (numrots, addr, 2);
@@ -86,7 +91,7 @@ void xlate_table (int n, char *addr, char *bucket1) {
 			colortab [c]=(longcolor>>colorshift)&colorand;
 			};
 		};
-  
+
 	dest=malloc (len);
 	if (dest==NULL) rexit (9);
 	shm_tbllen[n]=len;
@@ -94,7 +99,7 @@ void xlate_table (int n, char *addr, char *bucket1) {
 	shm_flags[n]=flags;
 	tblofs=0;
 	dataofs=numshapes*4;
-  
+
 	for (c=0; c<numshapes; c++) {
 		readin (xs, addr, 1);
 		readin (ys, addr, 1);
@@ -103,7 +108,7 @@ void xlate_table (int n, char *addr, char *bucket1) {
 		//	Copy the actual pixel bitmap of the shape into bucket
 		if (storetype==st_byte) {
 			memcpy (bucket, addr, xs*ys);
-			(char*) addr+=(xs*ys);
+			addr+=(xs*ys);
 			};
 
 //	Now the shape definition is in memory at BUCKET
@@ -117,7 +122,7 @@ void xlate_table (int n, char *addr, char *bucket1) {
 		wr (dest, tblofs, dataofs, 2);
 		wr1 (dest, tblofs, xsb);
 		wr1 (dest, tblofs, ys);
-
+flags=0;
 		if (flags & shm_blflag) {
 			for (b=3; b>=0; b--) {
 				for (y=0; y<ys; y++) {
@@ -140,9 +145,10 @@ void xlate_table (int n, char *addr, char *bucket1) {
 	};
 
 void shm_do (void) {
-	long shoffset[128];
+	int32_t shoffset[128];
 	char *shaddr[128];
-	int shlen[128];					// Dual purpose
+	//int shlen[128];					// Dual purpose
+	uint16_t shlen[128];					// Dual purpose
 	int shafile;
 	int c;
 	char*bucket1;
@@ -165,7 +171,7 @@ void shm_do (void) {
 		if (!shm_want[c]) {
 	// This shape file exists, but not needed now.  Purge it from memory
 			if (shm_tbladdr[c]!=NULL) {
-				free (shm_tbladdr[c]);
+//PORT				free (shm_tbladdr[c]);
 				shm_tbladdr[c]=NULL;
 				};
 			}
@@ -182,10 +188,10 @@ void shm_do (void) {
 	for (c=0; c<shm_maxtbls; c++) {
 		if (shaddr[c]!=NULL) {
 			xlate_table (c,shaddr[c], bucket1);
-			free (shaddr[c]);
+//PORT			free (shaddr[c]);
 			};
 		};
-	free (bucket1);
+//PORT	free (bucket1);
 	};
 
 void shm_exit (void) {

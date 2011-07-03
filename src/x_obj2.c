@@ -4,16 +4,17 @@
 //
 // by Allen W. Pilgrim
 
+#include "port.h"
 #include <stdlib.h>
 #include <string.h>
-#include "\develop\xargon\include\gr.h"
-#include "\develop\xargon\include\keyboard.h"
-#include "\develop\xargon\include\windows.h"
-#include "\develop\xargon\include\gamectrl.h"
-#include "\develop\xargon\include\music.h"
-#include "\develop\xargon\include\x_obj.h"
-#include "\develop\xargon\include\xargon.h"
-#include "\develop\xargon\include\x_snd.h"
+#include "include/gr.h"
+#include "include/keyboard.h"
+#include "include/windows.h"
+#include "include/gamectrl.h"
+#include "include/music.h"
+#include "include/x_obj.h"
+#include "include/xargon.h"
+#include "include/x_snd.h"
 
 int msg_grunt (int n, int msg, int z) {
 	int sh=kindtable[obj_grunt]*256;
@@ -33,10 +34,10 @@ int msg_grunt (int n, int msg, int z) {
 				};
 			if (++pobj->counter>=10) pobj->counter=0;
 			if ((pobj->counter&1)!=0) return (0);
-			if (random(20)==0) {
+			if (xr_random(20)==0) {
 				pobj->xd=0; snd_play (2,snd_grunt);
 				};
-			if (random(15)==0) {
+			if (xr_random(15)==0) {
 				seekplayer (n,&pobj->xd,&pobj->yd);
 				pobj->xd*=4;
 				};
@@ -108,7 +109,7 @@ int msg_centipede (int n, int msg, int z) {
 	switch (msg) {
 		case msg_update:
 			if (++pobj->counter>=12) pobj->counter=0;
-			if (random(30)==0) seekplayer (n,&pobj->xd,0);
+			if (xr_random(30)==0) seekplayer (n,&pobj->xd,0);
 			if (!crawl (n,pobj->xd,0)) pobj->xd=-pobj->xd;
 			return(1);
 		case msg_draw:
@@ -138,14 +139,14 @@ int msg_centipede (int n, int msg, int z) {
 				if (pobj->xl<37) {
 					for (c=0; c<7; c++) {
 						addobj (obj_centexpl,pobj->x+((pobj->xd>0)?pobj->xl-24:16),
-							pobj->y+5,random(7)-3,random(4)-10);
+							pobj->y+5,xr_random(7)-3,xr_random(4)-10);
 						};
 					explode1 (objs[z].x,objs[z].y,4,0);
 					playerkill (n); snd_play (4,snd_enemykill3);
 					}
 				else {
 					addobj (obj_centexpl,pobj->x+((pobj->xd>0)?pobj->xl-24:16),
-						pobj->y+5,random(7)-3,random(4)-10);
+						pobj->y+5,xr_random(7)-3,xr_random(4)-10);
 					snd_play (4,snd_hitenemy3);
 					};
 				}; return (1);
@@ -172,8 +173,8 @@ int msg_alien (int n, int msg, int z) {
 			if (++pobj->info1>=32) pobj->info1=0;
 			if ((pobj->counter&1)!=0) return (0);
 			if (pobj->xd!=0) pobj->substate=pobj->xd;
-			if (random(20)==0) pobj->xd=(pobj->xd>0)?0:pobj->substate;
-			if (random(15)==0) {
+			if (xr_random(20)==0) pobj->xd=(pobj->xd>0)?0:pobj->substate;
+			if (xr_random(15)==0) {
 				seekplayer (n,&pobj->xd,&pobj->yd);
 				pobj->xd*=4;
 				};
@@ -206,10 +207,10 @@ int msg_leech (int n, int msg, int z) {
 			if ((pobj->counter&1)!=0) return (0);
 			if (pobj->statecount--==0) pobj->xd=pobj->substate;
 			if (pobj->xd!=0) pobj->substate=pobj->xd;
-			if (random(20)==0) {
+			if (xr_random(20)==0) {
 				pobj->xd=0; pobj->statecount=2; return (0);
 				};
-			if (random(40)==0) {
+			if (xr_random(40)==0) {
 				seekplayer (n,&pobj->xd,&pobj->yd); pobj->xd*=4;
 				};
 			if (!crawl (n,pobj->xd,0)) pobj->xd=-pobj->xd; return (1);
@@ -250,11 +251,11 @@ int msg_troll (int n, int msg, int z) {
 				};
 			if (++pobj->counter>=32) pobj->counter=0;
 			if ((pobj->counter&1)!=0) return (0);
-			if (random(20)==0) {
+			if (xr_random(20)==0) {
 				seekplayer (n,&pobj->xd,&pobj->yd);	pobj->xd*=4;
 				};
 			if (!crawl (n,pobj->xd,0)) pobj->xd=-pobj->xd;
-			if ((random(30)==0)&&(pobj->xd!=0)) {
+			if ((xr_random(30)==0)&&(pobj->xd!=0)) {
 				addobj (obj_bullet,pobj->x+6+(pobj->xd>0)
 					*20,pobj->y+10,sgn(pobj->xd)*6,0);
 				snd_play (2,snd_enemyfire); 
@@ -287,10 +288,10 @@ int msg_blob (int n, int msg, int z) {
 				case 0:
 					if ((pobj->counter>=((pobj->xd<0)?0:12))&&
 						(pobj->counter<((pobj->xd<0)?4:16))) {
-						if ((!crawl (n,pobj->xd,0))||(random(40)==0))
+						if ((!crawl (n,pobj->xd,0))||(xr_random(40)==0))
 							pobj->xd=-pobj->xd;
 						};
-					if (random(50)==0) {
+					if (xr_random(50)==0) {
 						if (pobj->xd<0) {
 							if (!(standfloor (n,-78,0))) return (0);
 							pobj->state=1; pobj->x-=23;
@@ -340,11 +341,11 @@ int msg_lizard (int n, int msg, int z) {
 	switch (msg) {
 		case msg_update:
 			pobj->counter=(pobj->counter+1)&7;
-			if (random(20)==0) {
+			if (xr_random(20)==0) {
 				seekplayer (n,&pobj->xd,&pobj->yd);	pobj->xd*=2;
 				};
 			if (!crawl (n,pobj->xd,0)) pobj->xd=-pobj->xd;
-			if ((random(55)==0)&&(pobj->xd!=0)) {
+			if ((xr_random(55)==0)&&(pobj->xd!=0)) {
 				addobj (obj_bullet,pobj->x-4+(pobj->xd>0)
 					*16,pobj->y+4,pobj->xd*4,0);
 				snd_play (2,snd_enemyfire);
@@ -376,7 +377,7 @@ int msg_xargbot (int n, int msg, int z) {
 					killobj (n);
 					}; return (1);
 				};
-			if (random(15)==0) {
+			if (xr_random(15)==0) {
 				seekplayer (n,&pobj->xd,&pobj->yd);
 				pobj->yd*=4; pobj->xd*=2;
 				};
@@ -384,12 +385,12 @@ int msg_xargbot (int n, int msg, int z) {
 				pobj->xd=-pobj->xd;
 			if ((!justmove(n,pobj->x,pobj->y+pobj->yd))||(!onscreen(n)))
 				pobj->yd=-pobj->yd; 
-			if (random(20)==0) {
+			if (xr_random(20)==0) {
 				pobj->xd=0;	pobj->substate=1;	return (1);
 				};
 			if (pobj->xd<0) pobj->substate=0;
 			else if (pobj->xd>0) pobj->substate=2;
-			if ((random(((pobj->state!=2)?50:40))==0)&&(pobj->xd!=0)) {
+			if ((xr_random(((pobj->state!=2)?50:40))==0)&&(pobj->xd!=0)) {
 				addobj (obj_bullet,pobj->x-4+(pobj->xd>0)
 					*16,pobj->y+18,pobj->xd*3,0);
 				snd_play (2,snd_xargfire);
@@ -429,11 +430,11 @@ int msg_krusty (int n, int msg, int z) {
 				playerkill (n); return (1);
 				};
 			if (++pobj->counter>=12) pobj->counter=0;
-			if (random(30)==0) {
+			if (xr_random(30)==0) {
 				seekplayer (n,&pobj->xd,&pobj->yd); pobj->yd=0;
 				};
 			if (!crawl (n,pobj->xd,0)) pobj->xd=-pobj->xd;
-			if (random(12)==0)
+			if (xr_random(12)==0)
 				addobj (obj_bubble,pobj->x+6,pobj->y-2,0,0); return (1);
 		case msg_draw:
 			drawshape (&gamevp,sh+pobj->counter/2+
@@ -464,7 +465,7 @@ int msg_ghoul (int n, int msg, int z) {
 				};
 			if (pobj->statecount>0) pobj->statecount--;
 			if (!justmove(n,pobj->x,pobj->y+pobj->yd)) pobj->yd=-pobj->yd;
-			if (random(20)==0) {
+			if (xr_random(20)==0) {
 				seekplayer (n,&pobj->xd,&pobj->yd);
 				pobj->xd*=2; pobj->yd*=2;
 				};
@@ -502,16 +503,16 @@ int msg_eel (int n, int msg, int z) {
 	switch (msg) {
 		case msg_update:
 			if (++pobj->counter>=10) pobj->counter=0;
-			if (random(20)==0) {
-				pobj->xd=random(3)*4-4;
-				if (pobj->xd==0) pobj->yd=random(2)*4-2;
-				else pobj->yd=random(3)*2-2;
+			if (xr_random(20)==0) {
+				pobj->xd=xr_random(3)*4-4;
+				if (pobj->xd==0) pobj->yd=xr_random(2)*4-2;
+				else pobj->yd=xr_random(3)*2-2;
 				};
 			if (!fishdo(n,pobj->x+pobj->xd,pobj->y))
 				pobj->xd=-pobj->xd;
 			if (!fishdo(n,pobj->x,pobj->y+pobj->yd))
 				pobj->yd=-pobj->yd;
-			if (random(10)==0)
+			if (xr_random(10)==0)
 				addobj (obj_bubble,pobj->x+6,pobj->y-2,0,0); return (1);
 		case msg_draw:
 			drawshape (&gamevp,sh+pobj->counter/2+(pobj->xd>0)*5,
@@ -536,16 +537,16 @@ int msg_badfish (int n, int msg, int z) {
 				return (1);
 				};
 			pobj->counter=(pobj->counter+1)&7;
-			if (random(20)==0) {
-				pobj->xd=random(3)*4-4;
-				if (pobj->xd==0) pobj->yd=random(2)*4-2;
-				else pobj->yd=random(3)*2-2;
+			if (xr_random(20)==0) {
+				pobj->xd=xr_random(3)*4-4;
+				if (pobj->xd==0) pobj->yd=xr_random(2)*4-2;
+				else pobj->yd=xr_random(3)*2-2;
 				};
 			if (!fishdo(n,pobj->x+pobj->xd,pobj->y))
 				pobj->xd=-pobj->xd;
 			if (!fishdo(n,pobj->x,pobj->y+pobj->yd))
 				pobj->yd=-pobj->yd;
-			if (random(10)==0)
+			if (xr_random(10)==0)
 				addobj (obj_bubble,pobj->x+6,pobj->y-2,0,0); return (1);
 		case msg_draw:
 			if (pobj->state>=2) {
@@ -586,7 +587,7 @@ int msg_bat (int n, int msg, int z) {
 
 int msg_hopper (int n, int msg, int z) {
 	int sh=kindtable[obj_hopper]*256;
-	int dx,dy;
+	int16_t dx,dy;
 	int mod1=0;
 	objtype *pobj; pobj=&(objs[n]);
 
@@ -643,7 +644,7 @@ int msg_creeper (int n, int msg, int z) {
 				return (1);
 				};
 			if (++pobj->counter>=12) pobj->counter=0;
-			if (random(30)==0) seekplayer (n,&pobj->xd,&pobj->yd);
+			if (xr_random(30)==0) seekplayer (n,&pobj->xd,&pobj->yd);
 			if (!crawl (n,pobj->xd,0)) pobj->xd=-pobj->xd; return (1);
 		case msg_draw:
 			if (pobj->state>=3) {
@@ -678,8 +679,8 @@ int msg_bee (int n, int msg, int z) {
 			pobj->counter=(pobj->counter+1)&3;
 			if (++pobj->statecount>=4) pobj->statecount=0;
 			if (pobj->xd!=0) pobj->substate=pobj->xd;
-			if (random(20)==0) pobj->xd=(pobj->xd>0)?0:pobj->substate;
-			if (random(40)==0) {
+			if (xr_random(20)==0) pobj->xd=(pobj->xd>0)?0:pobj->substate;
+			if (xr_random(40)==0) {
 				snd_play (1,snd_bee);
 				seekplayer (n,&pobj->xd,&pobj->yd);
 				pobj->xd*=4; pobj->yd*=2;
@@ -748,7 +749,7 @@ int msg_spider (int n, int msg, int z) {
 				addscore (kindscore[obj_spider],pobj->x,pobj->y);
 				killobj (n);
 				};
-			if (random(40)==0) {
+			if (xr_random(40)==0) {
 				snd_play (2,snd_spider); seekplayer (n,&pobj->xd,&pobj->yd);
 				};
 			if (!crawl (n,pobj->xd,0)) pobj->xd=-pobj->xd; return (1);
@@ -792,7 +793,7 @@ int msg_seamonster (int n, int msg, int z) {
 	switch (msg) {
 		case msg_update:
 			if (++pobj->counter>=20) pobj->counter=0;
-			if (random(30)==0)
+			if (xr_random(30)==0)
 				addobj (obj_bubble,pobj->x+10,pobj->y+4,0,0); return (1);
 		case msg_draw:
 			drawshape (&gamevp,sh+pobj->counter/4,pobj->x,pobj->y); break;
@@ -813,11 +814,11 @@ int msg_robot (int n, int msg, int z) {
 				};
 			if (++pobj->counter>=16) pobj->counter=0;
 			if ((pobj->counter&1)!=0) return (0);
-			if (random(40)==0) {
+			if (xr_random(40)==0) {
 				seekplayer (n,&pobj->xd,&pobj->yd);	pobj->xd*=4;
 				};
 			if (!crawl (n,pobj->xd,0)) pobj->xd=-pobj->xd;
-			if ((random(50)==0)&&(pobj->xd!=0)) {
+			if ((xr_random(50)==0)&&(pobj->xd!=0)) {
 				addobj (obj_bullet,pobj->x-3+(pobj->xd>0)*28,
 					pobj->y+12,sgn(pobj->xd)*4,0);
 				objs[numobjs-1].state=1;
@@ -842,16 +843,16 @@ int msg_redfish (int n, int msg, int z) {
 	switch (msg) {
 		case msg_update:
 			pobj->counter=(pobj->counter+1)&7;
-			if (random(20)==0) {
-				pobj->xd=random(3)*4-4;
-				if (pobj->xd==0) pobj->yd=random(2)*4-2;
-				else pobj->yd=random(3)*2-2;
+			if (xr_random(20)==0) {
+				pobj->xd=xr_random(3)*4-4;
+				if (pobj->xd==0) pobj->yd=xr_random(2)*4-2;
+				else pobj->yd=xr_random(3)*2-2;
 				};
 			if (!fishdo(n,pobj->x+pobj->xd,pobj->y))
 				pobj->xd=-pobj->xd;
 			if (!fishdo(n,pobj->x,pobj->y+pobj->yd))
 				pobj->yd=-pobj->yd;
-			if (random(14)==0)
+			if (xr_random(14)==0)
 				addobj (obj_bubble,pobj->x+6,pobj->y-2,0,0); return (1);
 		case msg_draw:
 			drawshape (&gamevp,sh+pobj->counter/2+(pobj->xd>0)*4,
@@ -883,12 +884,12 @@ int msg_xargon (int n, int msg, int z) {
 					pobj->y+ydietab[pobj->counter/2]);
 				if (pobj->counter/2==0) dim(); else undim();
 				setcolor (250,20,20,23);
-				explode1 (pobj->x+random(54),pobj->y+random(60),1,1);
-				explode1 (pobj->x+random(54),pobj->y+random(60),1,0);
-				addobj (obj_fireexpl,pobj->x+random(60)-15,
-					pobj->y+random(68)-15,0,0);
-				addobj (obj_hithero,pobj->x+random(60)-12,
-					pobj->y+random(68)-17,0,0);
+				explode1 (pobj->x+xr_random(54),pobj->y+xr_random(60),1,1);
+				explode1 (pobj->x+xr_random(54),pobj->y+xr_random(60),1,0);
+				addobj (obj_fireexpl,pobj->x+xr_random(60)-15,
+					pobj->y+xr_random(68)-15,0,0);
+				addobj (obj_hithero,pobj->x+xr_random(60)-12,
+					pobj->y+xr_random(68)-17,0,0);
 				if (pobj->statecount==0) {
 					objs[0].state=st_still;
 					snd_play (5,snd_enemykill1);
@@ -908,7 +909,7 @@ int msg_xargon (int n, int msg, int z) {
 					gameover=2;
 					}; return (1);
 				};
-			if (random(20)==0) {
+			if (xr_random(20)==0) {
 				seekplayer (n,&pobj->xd,0); pobj->xd*=4;
 				};
 			dist=vectdist(n,0);
@@ -916,7 +917,7 @@ int msg_xargon (int n, int msg, int z) {
 			if ((dist>256)&&(pobj->xd>=0)) pobj->xd=-pobj->xd;
 			if (!justmove(n,pobj->x+pobj->xd,pobj->y)) pobj->xd=-pobj->xd;
 			justmove(n,pobj->x,pobj->y+ydtab[pobj->counter/2]);
-			if ((random(20)==0)&&(pobj->info1==0)&&(pobj->yd==0)) {
+			if ((xr_random(20)==0)&&(pobj->info1==0)&&(pobj->yd==0)) {
 				pobj->info1=15;
 				addobj (obj_skull,pobj->x-10,pobj->y+50,-2,0);
 				pobj->state=5; snd_play (2,snd_enemyfire); 
@@ -929,10 +930,10 @@ int msg_xargon (int n, int msg, int z) {
 			if (z==0) hitplayer (n,0);
 			if (kindflags[objs[z].objkind]&f_weapon) {
 				pobj->substate++; snd_play (4,snd_hitenemy4);
-				explode1 (pobj->x+random(55),pobj->y+random(60),2,1);
-				explode1 (pobj->x+random(55),pobj->y+random(60),3,1);
-				addobj (obj_fireexpl,pobj->x+random(44),pobj->y+random(52),0,0);
-				addobj (obj_fireexpl,pobj->x+random(44),pobj->y+random(52),0,0);
+				explode1 (pobj->x+xr_random(55),pobj->y+xr_random(60),2,1);
+				explode1 (pobj->x+xr_random(55),pobj->y+xr_random(60),3,1);
+				addobj (obj_fireexpl,pobj->x+xr_random(44),pobj->y+xr_random(52),0,0);
+				addobj (obj_fireexpl,pobj->x+xr_random(44),pobj->y+xr_random(52),0,0);
 				killobj (z);
 				}; return (1);
 		}; return (0);

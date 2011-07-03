@@ -1,5 +1,7 @@
 //	GR.H:  Header of data types for shapes
 
+#include "../port.h"
+
 void setcolor (int c, int n1, int n2, int n3);
 
 #define byte unsigned char

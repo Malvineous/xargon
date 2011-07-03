@@ -1,14 +1,14 @@
 //	Windows.C: Window controller
 
-#include <dos.h>;
-#include <string.h>;
-#include "\develop\xargon\include\gr.h";
-#include "\develop\xargon\include\keyboard.h"
-#include "\develop\xargon\include\windows.h";
+//#include <dos.h>
+#include <string.h>
+#include "include/gr.h"
+#include "include/keyboard.h"
+#include "include/windows.h"
 
 char cursorchar;
 int  curhi, curlo, curback;					// current color scheme
-extern int *myclock;
+//extern int *myclock;
 
 void defwin (wintype *win,int x8,int y,int xl16,int yl16,int h16,int v16,int flags) {
 	win->winflags=flags;
@@ -164,8 +164,8 @@ int wgetkey (vptype *vp, int x, int y, int font) {
 	tempstr [1]=0;
 
 	while (!k_pressed()) {
-		oldclock=*myclock;
-		do {} while (oldclock==*myclock);
+		oldclock=getclock();
+		do {} while (oldclock==getclock());
 		cursorchar=(cursorchar&7)+1;
 		tempstr[0]=cursorchar;
 		wprint (vp,x,y,font,tempstr);

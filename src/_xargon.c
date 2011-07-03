@@ -6,47 +6,49 @@
 
 extern unsigned _stklen=8192;
 
+#include "port.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <dos.h>
-#include <conio.h>
+//#include <dos.h>
+//#include <conio.h>
 #include <fcntl.h>
-#include <io.h>
+//#include <io.h>
 #include <ctype.h>
-#include <alloc.h>
-#include "\develop\xargon\include\gr.h"
-#include "\develop\xargon\include\keyboard.h"
-#include "\develop\xargon\include\windows.h"
-#include "\develop\xargon\include\gamectrl.h"
-#include "\develop\xargon\include\uncrunch.h"
-#include "\develop\xargon\include\config.h"
-//#include "\develop\xargon\include\pixwrite.h"
-#include "\develop\xargon\include\music.h"
-#include "\develop\xargon\include\x_obj.h"
-#include "\develop\xargon\include\xargon.h"
-#include "\develop\xargon\include\x_snd.h"
+//#include <alloc.h>
+#include <unistd.h>
+#include "include/gr.h"
+#include "include/keyboard.h"
+#include "include/windows.h"
+#include "include/gamectrl.h"
+#include "include/uncrunch.h"
+#include "include/config.h"
+//#include "include/pixwrite.h"
+#include "include/music.h"
+#include "include/x_obj.h"
+#include "include/xargon.h"
+#include "include/x_snd.h"
 
 wintype menu_win;
 vptype gamevp, statvp, textvp, tempvp;
 int scrnxs, scrnys;
-int bd [boardxs][boardys];
-int scrollxd, scrollyd, oldscrollxd, oldscrollyd, oldx0, oldy0;
+uint16_t bd [boardxs][boardys];
+int16_t scrollxd, scrollyd, oldscrollxd, oldscrollyd, oldx0, oldy0;
 
-int stateinfo [numstates];
+int16_t stateinfo [numstates];
 infotype info[numinfotypes];
 int (*kindmsg[numobjkinds])(int n, int msg, int z);
-int kindxl[numobjkinds];
-int kindyl[numobjkinds];
+int16_t kindxl[numobjkinds];
+int16_t kindyl[numobjkinds];
 char *kindname[numobjkinds];
-int kindflags[numobjkinds];
-int kindtable[numobjkinds];
-int kindscore[numobjkinds];
+int16_t kindflags[numobjkinds];
+int16_t kindtable[numobjkinds];
+int16_t kindscore[numobjkinds];
 
 objtype objs [maxobjs+2];
-int numobjs, numscrnobjs;
-int scrnobjs [maxscrnobjs];
-int gameover, gamecount, statmodflg;	// gameover 0=no 1=yes-dead 2=yes-won
+int16_t numobjs, numscrnobjs;
+int16_t scrnobjs [maxscrnobjs];
+int16_t gameover, gamecount, statmodflg;	// gameover 0=no 1=yes-dead 2=yes-won
 char cnt_fruit, old_fruit, icon_fruit;
 pltype pl,o_pl;
 
@@ -65,7 +67,7 @@ char oursong [16];
 
 char hiname [hilen][numhighs];
 char savename [numsaves][savelen];
-unsigned long hiscore [numhighs];
+uint32_t hiscore [numhighs];
 
 extern char xshafile[],xvocfile[],cfgfname[],ext[],xintrosong[];
 extern char v_msg[];
@@ -254,8 +256,9 @@ void drawstats(void) {
 
 void zapobjs (void) {
 	int c;
+printf("zapping %d objs\n", numobjs);
 	for (c=0; c<numobjs; c++) {
-		if (objs[c].inside!=NULL) free(objs[c].inside);
+//PORT		if (objs[c].inside!=NULL) free(objs[c].inside);
 		};
 	init_objs();
 	};
@@ -294,7 +297,7 @@ void savecfg (void) {
 void loadboard (char *fname) {
 	int boardfile;
 	char dest[16];
-	int c,tempint;
+	uint16_t c,tempint;
 	int x,y;
 
 	// purging all shapes from memory to prevent memory fragmentation
@@ -320,6 +323,7 @@ void loadboard (char *fname) {
 	boardfile=_open (dest,O_BINARY);
 	if (!read (boardfile,&bd,sizeof(bd))) rexit(1);
 	if (!read (boardfile,&numobjs,sizeof(numobjs))) rexit(2);
+printf("loading %d objs\n", numobjs);
 	if (!read (boardfile,&objs,numobjs*sizeof(objs[0]))) rexit(3);
 	if (!read (boardfile,&pl,sizeof(pl))) rexit(4);
 	if (!read (boardfile,&cnt_fruit,sizeof(cnt_fruit))) rexit(5);
@@ -338,7 +342,13 @@ void loadboard (char *fname) {
 			};
 		};
 	for (c=0; c<numobjs; c++) {
-		shm_want [kindtable[objs[c].objkind]]=1;
+		uint16_t t = kindtable[objs[c].objkind];
+		if (t >= shm_maxtbls) {
+			printf("tried to load image %04X (from object type %u), which is out of range!\n", t, (unsigned int)objs[c].objkind);
+			continue; // out of range!
+		}
+		//printf("requesting load of %04X (from object type %u)\n", t, (unsigned int)objs[c].objkind);
+		shm_want [t]=1;
 		};
 	shm_do();
 	};
@@ -405,8 +415,8 @@ int loadsavewin (char *msg, char *blankmsg) {
 		wprint (&menu_win.inside,4,20+cur*10,2,tempstr);
 		delay (100);
 		wprint (&menu_win.inside,4,20+cur*10,2," ");
-		if (((dx1+dy1)!=0)&&(abs((*myclock)-moveclock)>1)) {
-			moveclock=(*myclock);
+		if (((dx1+dy1)!=0)&&(abs((getclock())-moveclock)>1)) {
+			moveclock=(getclock());
 			cur+=dx1+dy1;
 			if ((cur>=0)&&(cur<(numsaves))) snd_play (4,snd_jump);
 			cur=(max(0,min(cur,numsaves-1)));
@@ -516,8 +526,9 @@ void printline (vptype *ourvp, int y, int n, int flg) {
 	};
 
 void ourdelay (void) {
-	int c=*myclock;
-	do {} while ((*myclock-c)<0);
+	return;
+	int c=getclock();
+	do {} while ((getclock()-c)<0);
 	};
 
 void rest (void) {
@@ -607,7 +618,7 @@ void putlevelmsg (int n) {
 	levelwin.topleft.vpy=levelwin.inside.vpy;
 	levelwin.topleft.vpyl=levelwin.inside.vpyl;
 
-	levelmsgclock=*myclock;
+	levelmsgclock=getclock();
 	if (n>=32) return;
 	textmsg=leveltxt[n];
 	textmsglen=strlen (textmsg);
@@ -696,7 +707,7 @@ void donelevelmsg (void) {
 	do checkctrl0(0); while (key!=0);
 	do {
 		checkctrl0(0);
-		dt=((*myclock)-levelmsgclock)/10;
+		dt=((getclock())-levelmsgclock)/10;
 		if ((key==escape)||(key==enter)) done=1;
 		else if ((dt>=2)&&(key||fire1)) done=1;
 		else if (dt>=4) done=1;
@@ -813,7 +824,7 @@ int domenu (char *menutext, char *keytab, int y0, int num, int demoflag,
 		wprint (&menuwin.inside,82+(cur>=y0)*textx0,78,2,soundf?"ON":"OFF");
 		}
 	setpagemode(1);
-	democlock=*myclock;
+	democlock=getclock();
 	for (cur=numlines()-1; cur>=0; cur--) {
 		fontcolor (&menuwin.inside,getline (cur,line,0),-1);
 		if (menuflag==1) {
@@ -841,16 +852,16 @@ int domenu (char *menutext, char *keytab, int y0, int num, int demoflag,
 		oldcur=cur;
 		checkctrl0(0);
 		key=toupper(key);
-		if (((dx1+dy1)!=0)&&(abs((*myclock)-moveclock)>1)) {
+		if (((dx1+dy1)!=0)&&(abs((getclock())-moveclock)>1)) {
 //			snd_play (4,snd_jump);
-			moveclock=(*myclock);
+			moveclock=(getclock());
 			cur+=dx1+dy1;
 			if ((cur>=0)&&(cur<(num))) snd_play (4,snd_jump);
 			cur=min (num-1,max (0,cur));
-			democlock=(*myclock);
+			democlock=(getclock());
 			};
 
-//		if ((((*myclock)-democlock)>300)&&demoflag) {
+//		if ((((getclock())-democlock)>300)&&demoflag) {
 //			key='D';
 //			return (key);
 //			};
@@ -1194,7 +1205,7 @@ void play (int demoflg) {
 				};
 			};
 
-		begclock=*myclock;
+		begclock=getclock();
 		gamecount++;
 		checkctrl(1);
 
@@ -1273,7 +1284,7 @@ void play (int demoflg) {
 		if (o_col==1) {init_colors(); o_col=0;};
 
 		if ((demoflg)&&(!macplay)) gameover=1;
-		while (((*myclock)-begclock)<(granny+1)) continue;
+		while (((getclock())-begclock)<(granny+1)) continue;
 	} while (!gameover);
 	key=0; stopmac(); macaborted=1;
 	if (gameover==2) pageview (200);					// Won!
@@ -1359,7 +1370,7 @@ void dodemo (void) {
 		} while (!macaborted);
 	};
 
-void main (int argc, char *argv[]) {
+int main (int argc, char *argv[]) {
 //	cfg_getpath(argc,argv); strcpy (tempname,path);
 	strcpy (tempname,"board_t"); strcat (tempname,ext);
 	loadcfg();
@@ -1413,6 +1424,8 @@ void main (int argc, char *argv[]) {
 
 	window (1,1,80,25); textcolor (15); textbackground (0);
 	gotoxy (1,1); clrscr();
+
+	return 0;
 	};
 
 void rexit (int num) {
@@ -1423,10 +1436,10 @@ void rexit (int num) {
 	gc_exit();
 	snd_exit();
 
-	clrscr();
+//PORT	clrscr();
 	uncrunch (CFG_WIN,scrnaddr,c_len);
 	window (12,14,68,22); textcolor (15); textbackground (1);
-	gotoxy (1,1); clrscr();
+//PORT	gotoxy (1,1); clrscr();
 	cputs ("Sorry, error <");
 	cputs (itoa(num,errnum,10));
 	cputs ("> has occurred.\r\n");
