@@ -6,6 +6,7 @@
 
 extern unsigned _stklen=8192;
 
+#undef _GNU_SOURCE
 #include "port.h"
 #include <stdio.h>
 #include <stdlib.h>
