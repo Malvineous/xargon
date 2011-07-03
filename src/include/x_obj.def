@@ -1,0 +1,103 @@
+// Definitions for objects
+
+defobj(0,obj_player,msg_player,24,40,"PLAYER",f_msgtouch,6,0);
+defobj(1,obj_killme,msg_null,0,0,"KILLME",0,0,0);
+defobj(2,obj_heroswim,msg_heroswim,30,30,"HEROSWIM",f_msgtouch,40,0);
+defobj(3,obj_herobee,msg_herobee,24,24,"HEROBEE",f_msgtouch,32,0);
+defobj(4,obj_mine,msg_mine,20,15,"MINE",0,40,0);
+defobj(5,obj_tiny,msg_tiny,10,16,"TINY",f_msgtouch,47,0);
+defobj(6,obj_text6,msg_text6,6,7,"TEXT6",f_inside,0,0);
+defobj(7,obj_text8,msg_text8,8,8,"TEXT8",f_inside,0,0);
+defobj(8,obj_bridger,msg_bridger,0,0,"BRIDGER",f_trigger,0,0);
+	// xd,yd=direction
+defobj(9,obj_door,msg_door,6,8,"DOOR",f_trigger,31,0);
+defobj(10,obj_centexpl,msg_centexpl,8,17,"CENTEXPL",0,52,20);
+defobj(11,obj_addstep,msg_addstep,16,16,"ADDSTEP",f_trigger,0,0);
+	// xd=type of step to add
+defobj(12,obj_pad,msg_pad,16,16,"PAD",0,51,0);
+	// cnt=number to trig, st=-1 off, 0 trig, 1 on
+defobj(13,obj_spring,msg_spring,32,16,"SPRING",0,36,0);
+	// cnt=height
+defobj(14,obj_arrow,msg_arrow,12,3,"ARROW",0,36,0);
+defobj(15,obj_masher,msg_masher,24,4,"MASHER",0,36,0);
+defobj(16,obj_platform,msg_platform,28,4,"PLATFORM",
+	f_trigger|f_always,36,0);
+defobj(17,obj_checkpt,msg_checkpt,16,16,"CHECKPT",f_inside,0,0);
+defobj(18,obj_elev,msg_elev,32,16,"ELEV",f_trigger|f_front,36,0);
+defobj(19,obj_mapdemo,msg_mapdemo,64,16,"MAPDEMO",f_front,27,0);
+defobj(20,obj_key,msg_key,12,20,"KEY",0,31,0);
+defobj(21,obj_heart,msg_heart,16,16,"HEART",0,37,100);
+defobj(22,obj_emerald,msg_emerald,16,12,"EMERALD",0,30,100);
+defobj(23,obj_eagle,msg_eagle,34,44,"EAGLE",f_trigger,45,0);
+defobj(24,obj_epic,msg_epic,32,15,"EPIC",0,34,0);
+defobj(25,obj_grunt,msg_grunt,38,25,"GRUNT",f_fireball,35,400); // disy=7
+defobj(26,obj_box,msg_box,16,16,"BOX",f_trigger,37,0);
+	// st=obj to add; xd=box; yd=-1 visible; cnt=trig#
+defobj(27,obj_score,msg_score,8,8,"SCORE",f_front,0,0);
+//defobj(27,obj_score,msg_score,4,5,"SCORE",f_front,0,0);
+defobj(28,obj_token,msg_token,16,16,"TOKEN",f_trigger,30,0);
+	// cnt=inv ref number
+defobj(29,obj_switch,msg_switch,16,16,"SWITCH",f_back,36,0);
+	// cnt=trig#, xd=0 onoff, 1=toggle
+defobj(30,obj_button,msg_button,16,8,"BUTTON",0,51,0);
+defobj(31,obj_poker,msg_poker,10,16,"POKER",f_trigger,51,0);
+defobj(32,obj_bullet,msg_bullet,8,3,"BULLET",0,30,0);
+defobj(33,obj_bonus,msg_bonus,16,16,"BONUS",0,37,0);
+defobj(34,obj_rock,msg_rock,16,16,"ROCK",f_weapon|f_msgtouch,30,0);
+defobj(35,obj_fireball,msg_fireball,24,22,"FIREBALL",
+	f_weapon|f_msgtouch,30,0);
+defobj(36,obj_laser,msg_laser,14,4,"LASER",f_weapon|f_msgtouch,30,0);
+defobj(37,obj_torpedo,msg_torpedo,10,5,"TORPEDO",f_weapon|f_msgtouch,30,0);
+defobj(38,obj_fragexpl,msg_fragexpl,6,6,"FRAGEXPL",f_front,30,0);
+defobj(39,obj_fireexpl,msg_fireexpl,32,32,"FIREEXPL",f_front,30,0);
+defobj(40,obj_flash,msg_flash,18,23,"FLASH",f_front,30,0);
+defobj(41,obj_hitwall,msg_hitwall,14,14,"HITWALL",f_front,30,0);
+defobj(42,obj_gems,msg_gems,12,14,"GEMS",0,37,50);
+defobj(43,obj_spear,msg_spear,6,4,"SPEAR",0,36,0);
+defobj(44,obj_stalag,msg_stalag,16,16,"STALAG",f_back|f_trigger,0,0);
+defobj(45,obj_boulder,msg_boulder,16,16,"BOULDER",f_fireball,36,200);
+defobj(46,obj_ball,msg_ball,0,0,"BALL",0,51,0);
+defobj(47,obj_fire,msg_fire,16,32,"FIRE",f_front,48,0);
+defobj(48,obj_searock,msg_searock,16,16,"SEAROCK",0,40,0);
+defobj(49,obj_torch,msg_torch,10,24,"TORCH",f_back,48,0);
+defobj(50,obj_biter,msg_biter,10,16,"BITER",0,60,0);		// st=direction
+defobj(51,obj_cloud,msg_cloud,80,16,"CLOUD",f_front,36,0);
+defobj(52,obj_centipede,msg_centipede,76,22,"CENTIPEDE",f_fireball,52,500);
+	// disy=10
+defobj(53,obj_alien,msg_alien,40,24,"ALIEN",f_fireball,58,250);
+defobj(54,obj_leech,msg_leech,44,23,"LEECH",f_fireball,42,300);	// disy=-7
+defobj(55,obj_troll,msg_troll,32,48,"TROLL",f_fireball,61,400);
+defobj(56,obj_blob,msg_blob,30,13,"BLOB",0,46,0);			// disy=3
+defobj(57,obj_hithero,msg_hithero,24,35,"HITHERO",f_front,30,0);
+defobj(58,obj_lizard,msg_lizard,16,16,"LIZARD",f_killable,56,114);
+defobj(59,obj_spikes,msg_spikes,24,16,"SPIKES",0,36,0);
+defobj(60,obj_xargbot,msg_xargbot,16,20,"XARGBOT",0,59,65);
+defobj(61,obj_transport,msg_transport,16,16,"TRANSPORT",f_trigger,0,0);
+defobj(62,obj_transpad,msg_transpad,16,16,"TRANSPAD",0,0,0);
+defobj(63,obj_effects,msg_effects,0,0,"EFFECTS",f_always,0,0);
+defobj(64,obj_krusty,msg_krusty,36,22,"KRUSTY",0,39,160);
+defobj(65,obj_ghoul,msg_ghoul,30,30,"GHOUL",0,54,2000);
+defobj(66,obj_bubble,msg_bubble,8,8,"BUBBLE",0,40,0);
+defobj(67,obj_eel,msg_eel,34,21,"EEL",f_killable,39,60);
+defobj(68,obj_badfish,msg_badfish,24,16,"BADFISH",0,40,140);
+defobj(69,obj_bat,msg_bat,16,13,"BAT",f_killable,56,140);
+defobj(70,obj_hopper,msg_hopper,16,14,"HOPPER",f_killable,63,145);
+defobj(71,obj_txtmsg,msg_txtmsg,16,16,"TXTMSG",0,0,0);
+defobj(72,obj_front,msg_front,16,16,"FRONT",f_front,55,0);
+	// st=obj to walk behind
+defobj(73,obj_timerpad,msg_timerpad,24,10,"TIMERPAD",0,51,0);
+defobj(74,obj_turret,msg_turret,22,15,"TURRET",f_trigger,59,0);
+defobj(75,obj_creeper,msg_creeper,30,14,"CREEPER",f_fireball,62,500);
+defobj(77,obj_bee,msg_bee,24,24,"BEE",f_killable,32,125);
+defobj(78,obj_climber,msg_climber,16,29,"CLIMBER",0,50,0);
+defobj(79,obj_spider,msg_spider,40,24,"SPIDER",f_fireball,43,150);
+defobj(80,obj_skull,msg_skull,18,13,"SKULL",f_killable,38,10);
+//defobj(80,obj_pebble,msg_pebble,6,4,"PEBBLE",0,36,0);
+defobj(81,obj_seamonster,msg_seamonster,26,25,"SEAMONSTER",0,39,0);
+defobj(82,obj_robot,msg_robot,28,28,"ROBOT",f_fireball,59,600);
+defobj(83,obj_redfish,msg_redfish,16,8,"REDFISH",f_killable,40,110);
+defobj(84,obj_icons,msg_icons,18,18,"ICONS",0,30,500);
+defobj(85,obj_story1,msg_story1,36,36,"STORY1",0,56,0);
+defobj(86,obj_story2,msg_story2,36,36,"STORY2",0,57,0);
+defobj(87,obj_xargon,msg_xargon,60,68,"XARGON",0,38,30000);
+defobj(88,obj_map,msg_map,48,53,"MAP",0,47,0);

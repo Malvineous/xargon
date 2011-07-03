@@ -1,0 +1,1 @@
+void pixwrite (int n);
