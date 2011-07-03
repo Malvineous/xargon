@@ -36,7 +36,7 @@ typedef struct {
 	int16_t sh;
 	int16_t flags;
 	char *na;
-	} infotype;
+	} __attribute((packed)) infotype;
 
 #define f_playerthru 1			// (blocks)
 #define f_notstair 2				// (blocks)
@@ -75,7 +75,7 @@ typedef struct {
 	int16_t ouched;
 	char pad[22];
 	uint32_t score;
-	} pltype;
+	} __attribute((packed)) pltype;
 
 // Inventory
 #define inv_hero   0				// Hero, as in a life? NADA
@@ -108,11 +108,14 @@ typedef struct {
 	int16_t xd, yd;
 	int16_t xl,yl;
 	int16_t state, substate, statecount, counter;
-	int16_t objflags;
-	char *inside;
+	uint16_t objflags;
+	uint32_t inside_val;
 	int16_t info1;						// player=lastxd
 	int16_t zaphold;
-	} objtype;
+
+	// extras
+	char *inside;
+	} __attribute((packed)) objtype;
 
 #define maxobjs 256
 #define maxscrnobjs 192

@@ -324,15 +324,20 @@ void loadboard (char *fname) {
 	boardfile=_open (dest,O_BINARY);
 	if (!read (boardfile,&bd,sizeof(bd))) rexit(1);
 	if (!read (boardfile,&numobjs,sizeof(numobjs))) rexit(2);
-printf("loading %d objs\n", numobjs);
-	if (!read (boardfile,&objs,numobjs*sizeof(objs[0]))) rexit(3);
+	for (int i = 0; i < numobjs; i++) {
+		if (!read (boardfile,&objs[i], 31)) rexit(3);
+	}
 	if (!read (boardfile,&pl,sizeof(pl))) rexit(4);
 	if (!read (boardfile,&cnt_fruit,sizeof(cnt_fruit))) rexit(5);
 	for (c=0; c<numobjs; c++) {
-		if (objs[c].inside!=NULL) {
+		if (objs[c].inside_val != 0) {
 			read (boardfile,&tempint,sizeof(tempint));
 			objs[c].inside=malloc(tempint+1);
+			objs[c].inside_val = 1;
 			read (boardfile,objs[c].inside,tempint+1);
+			}
+		else {
+			objs[c].inside = NULL;
 			};
 		};
 	_close (boardfile);
@@ -343,6 +348,10 @@ printf("loading %d objs\n", numobjs);
 			};
 		};
 	for (c=0; c<numobjs; c++) {
+		if (objs[c].objkind >= numobjkinds) {
+			printf("Object %d out of range! (max %d)\n", objs[c].objkind, numobjkinds);
+			objs[c].objkind = 0;
+		}
 		uint16_t t = kindtable[objs[c].objkind];
 		if (t >= shm_maxtbls) {
 			printf("tried to load image %04X (from object type %u), which is out of range!\n", t, (unsigned int)objs[c].objkind);
@@ -362,15 +371,18 @@ void saveboard (char *fname) {
 	strcpy (dest,fname);
 	if (strcmp(dest,tempname)!=0) strcat (dest,ext);
 
-	boardfile=_creat (dest,0);				// Was O_BINARY
+	boardfile=_creat (dest, 0644);				// Was O_BINARY
 	if (boardfile<0) rexit(20);
 	if (write (boardfile,&bd,sizeof(bd))<0) rexit(5);
 	write (boardfile,&numobjs,sizeof(numobjs));
-	write (boardfile,&objs,numobjs*sizeof(objs[0]));
+	//write (boardfile,&objs,numobjs*sizeof(objs[0]));
+	for (int i = 0; i < numobjs; i++) {
+		write (boardfile, &objs[i], 31);
+	}
 	write (boardfile,&pl,sizeof(pl));
 	write (boardfile,&cnt_fruit,sizeof(cnt_fruit));
 	for (c=0; c<numobjs; c++) {
-		if (objs[c].inside!=NULL) {
+		if (objs[c].inside_val != 0) {
 			tempint=strlen (objs[c].inside);
 			write (boardfile,&tempint,sizeof(tempint));
 			write (boardfile,objs[c].inside,tempint+1);
@@ -1301,8 +1313,8 @@ void pageview (int pgnum) {
 	for (c=0; c<numobjs; c++) {
 		if ((objs[c].objkind==obj_checkpt)&&(objs[c].counter==pgnum)) obj=c;
 		};
-	do {
-		if (obj>0) {
+	if (obj>0) {
+		do {
 			memcpy (&tempvp,&gamevp,sizeof(vptype));
 			memcpy (&gamevp,&mainvp,sizeof(vptype));
 			gamevp.vpox=objs[obj].x; gamevp.vpoy=objs[obj].y;
@@ -1337,8 +1349,8 @@ void pageview (int pgnum) {
 				else if ((objs[obj].xd==2)||(objs[obj].yd!=0)) key=escape;
 				else goto reloop2;
 				}
-			};
-		} while (key!=escape);
+			} while (key!=escape);
+		};
 
 	scrnxs=normxs; scrnys=normys;
 	setpagemode(1); fadeout();
@@ -1437,10 +1449,10 @@ void rexit (int num) {
 	gc_exit();
 	snd_exit();
 
-//PORT	clrscr();
+	clrscr();
 	uncrunch (CFG_WIN,scrnaddr,c_len);
 	window (12,14,68,22); textcolor (15); textbackground (1);
-//PORT	gotoxy (1,1); clrscr();
+	gotoxy (1,1); clrscr();
 	cputs ("Sorry, error <");
 	cputs (itoa(num,errnum,10));
 	cputs ("> has occurred.\r\n");

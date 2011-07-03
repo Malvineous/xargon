@@ -114,9 +114,11 @@ void dolevelsong (void) {
 			strcpy (newlevel,objs[n].inside);		// Level song
 	else {
 		c=findcheckpt(0);
-		d=objs[c].inside[0];
-		if ((d=='*')||(d=='#')||(d=='&'))
-			strcpy (newlevel,objs[c].inside);		// Level song
+		if (objs[c].inside) {
+			d=objs[c].inside[0];
+			if ((d=='*')||(d=='#')||(d=='&'))
+				strcpy (newlevel,objs[c].inside);		// Level song
+			}
 		};
 	};
 
@@ -354,7 +356,12 @@ void refresh (int pgmode) {
 		for (n=0; n<numobjs; n++) {
 			if (objs[n].objflags&mod_screen) {				// Add to Updtab
 				x=objs[n].x/16; if (x<endx) x=endx;
-				c=0; while (updtab[x][c]!=255) {c++;};
+				//c=0; while (updtab[x][c]!=255) {c++;};
+				c=0; while ((c < 20) && (updtab[x][c]!=255)) {c++;};
+				if (c >= 20) {
+					fprintf(stderr, "Too many entries in update table!\n");
+					break;
+				}
 				updtab[x][c]=n;
 				updtab[x][c+1]=255;
 				objs[n].objflags&=(mod_screen^0xffff);
@@ -478,7 +485,10 @@ else {
 			endx=(oldx+oldxl+15)/16; endy=(oldy+oldyl+15)/16;
 			for (y=starty; y<endy; y++) {
 				for (x=startx; x<endx; x++) {
-					//if ((x >= boardxs) || (y >= boardys)) continue; // out of range!
+					if ((x >= boardxs) || (y >= boardys) || (x < 0) || (y < 0)) {
+//						fprintf(stderr, "Board position %d,%d out of range!\n", x, y);
+						continue; // out of range!
+					}
 					bd[x][y]|=mod_screen;
 					};
 				};

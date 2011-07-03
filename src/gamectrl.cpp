@@ -143,12 +143,41 @@ void checkctrl (int pollflag) {
 	if (SDL_PollEvent(&event)) {
 		//key=k_read();
 		//if ((key==0)|(key==1)|(key==2)) key=k_read();
+		int newkey, newscan = 0;
 		switch (event.type) {
+			case SDL_KEYUP:
 			case SDL_KEYDOWN:
-				key = event.key.keysym.scancode; // TODO: Convert
+				switch (event.key.keysym.sym) {
+					case SDLK_LEFT:     newkey = k_left;    newscan = scan_cursorleft; break;
+					case SDLK_RIGHT:    newkey = k_right;   newscan = scan_cursorright; break;
+					case SDLK_UP:       newkey = k_up;      newscan = scan_cursorup; break;
+					case SDLK_DOWN:     newkey = k_down;    newscan = scan_cursordown; break;
+					case SDLK_PAGEUP:   newkey = k_pgdown;  break;
+					case SDLK_PAGEDOWN: newkey = k_pgup;    break;
+					case SDLK_F1:       newkey = k_f1;      newscan = scan_f1; break;
+					case SDLK_F7:       newkey = k_f7;      break;
+					case SDLK_SPACE:    newkey = ' ';       newscan = scan_space; break;
+					case SDLK_ESCAPE:   newkey = escape;    newscan = scan_esc; break;
+					case SDLK_RSHIFT:   newscan = scan_rshift; break;
+					case SDLK_LSHIFT:   newscan = scan_lshift; break;
+					case SDLK_RCTRL:
+					case SDLK_LCTRL:    newscan = scan_ctrl; break;
+					case SDLK_RALT:
+					case SDLK_LALT:     newscan = scan_alt; break;
+					default: newkey = event.key.keysym.sym; break;
+				}
 				break;
-			}
-		};
+		}
+		switch (event.type) {
+			case SDL_KEYUP:
+				keydown[0][newscan] = 0;
+				break;
+			case SDL_KEYDOWN:
+				keydown[0][newscan] = 1;
+				key = newkey;
+				break;
+		}
+	};
 	if (key!=0) {
 		switch (key) {
 			case k_up:

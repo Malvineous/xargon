@@ -8,17 +8,17 @@ SDL_Surface *screen;
 
 char *ultoa(unsigned long val, char *str, int base)
 {
-	sprintf("%lu", str);
+	sprintf(str, "%lu", val);
 	return str;
 }
 char *itoa(int val, char *str, int base)
 {
-	sprintf("%d", str);
+	sprintf(str, "%d", val);
 	return str;
 }
 char *ltoa(long val, char *str, int base)
 {
-	sprintf("%ld", str);
+	sprintf(str, "%ld", val);
 	return str;
 }
 char *strupr(char *s)
@@ -45,13 +45,13 @@ unsigned long filelength(int fd)
 	return buf.st_size;
 }
 
-void delay(int s)
+void delay(int ms)
 {
-	sleep(s);
+	usleep(ms * 1000);
 	return;
 }
 
-char getclock()
+int getclock()
 {
 	return SDL_GetTicks() / 54.9450549;
 }
@@ -105,7 +105,7 @@ void clrscr(void)
 #include <stdlib.h>
 int xr_random(int max)
 {
-	return random() * max;
+	return random() / (RAND_MAX / max);
 }
 
 #include <string.h>
@@ -202,15 +202,13 @@ char k_rshift, k_lshift, k_shift, k_ctrl, k_alt, k_numlock;
 
 void k_status(void)
 {
-	// TODO
-	k_rshift = 0;
-	k_lshift = 0;
-	k_shift = 0;
-	k_ctrl = 0;
-	k_alt = 0;
-	k_numlock = 0;
-//SDL_Event event;
-//SDL_PollEvent(&event);
+	SDLMod state = SDL_GetModState();
+	k_rshift = (state & KMOD_RSHIFT) ? 1 : 0;
+	k_lshift = (state & KMOD_LSHIFT) ? 1 : 0;
+	k_shift = (state & KMOD_SHIFT) ? 1 : 0;
+	k_ctrl = (state & KMOD_CTRL) ? 1 : 0;
+	k_alt = (state & KMOD_ALT) ? 1 : 0;
+	k_numlock = (state & KMOD_NUM) ? 1 : 0;
 	return;
 }
 
@@ -231,19 +229,32 @@ void removehandler(void)
 #include "include/gr.h"
 void clrvp (vptype *vp,byte col)
 {
-	// TODO
+	if (SDL_MUSTLOCK(::screen)) {
+		if (SDL_LockSurface(::screen) < 0) return;
+	}
+
+	// TODO: optimise by incrementing shape ptr instead
+	for (int y = 0; y < vp->vpyl; y++) {
+		for (int x = 0; x < vp->vpxl; x++) {
+			((char *)::screen->pixels)[(vp->vpy + y) * SCREEN_WIDTH + (vp->vpx + x)] = col;
+		}
+	}
+
+	if (SDL_MUSTLOCK(::screen)) SDL_UnlockSurface(::screen);
 	return;
 }
 
 void scrollvp (vptype *vp,int xd,int yd)
 {
 	// TODO
+	printf("todo: scrollvp\n");
 	return;
 }
 
 void scroll (vptype *vp,int x0,int y0,int x1,int y1,int xd,int yd)
 {
 	// TODO
+	printf("todo: scroll\n");
 	return;
 }
 
@@ -257,7 +268,6 @@ void plot_vga (int x, int y, byte color)
 
 	if (SDL_MUSTLOCK(::screen)) SDL_UnlockSurface(::screen);
 
-	SDL_Flip(::screen);
 	return;
 }
 
@@ -265,13 +275,28 @@ void plot_vga (int x, int y, byte color)
 void ldrawsh_vga (vptype *vp, int draw_x, int draw_y, int sh_xlb, int sh_yl,
 	char far *shape, int cmtable)
 {
+	draw_x += vp->vpx;
+	draw_y += vp->vpy;
+
+	// If the draw starts off the edge of the screen, skip that bit
+	int startx = 0, y = 0;
+	/* The game seems to ignore these entirely (see top two rows of screen pixels at main menu)
+	if (draw_y < 0) y += -draw_y;*/
+	if (draw_x < 0) startx += -draw_x;
+
+	if ((draw_x < 0) || (draw_y < 0)) {
+		//printf("Tried to draw at negative screen coordinates! (%d,%d)\n", draw_x, draw_y);
+		return;
+	}
+
 	if (SDL_MUSTLOCK(::screen)) {
 		if (SDL_LockSurface(::screen) < 0) return;
 	}
 
-	for (int y = 0; y < sh_yl; y++) {
+	// TODO: optimise by incrementing shape ptr instead
+	for (; y < sh_yl; y++) {
 		if (draw_y + y >= SCREEN_HEIGHT) break;
-		for (int x = 0; x < sh_xlb; x++) {
+		for (int x = startx; x < sh_xlb; x++) {
 			if (draw_x + x >= SCREEN_WIDTH) break;
 			uint8_t pixel = shape[y * sh_xlb + x];
 			pixel = cmtab[cmtable][pixel];
@@ -282,24 +307,12 @@ void ldrawsh_vga (vptype *vp, int draw_x, int draw_y, int sh_xlb, int sh_yl,
 
 	if (SDL_MUSTLOCK(::screen)) SDL_UnlockSurface(::screen);
 
-//	SDL_Flip(::screen);
-/*
-	static int c = 0;
-	printf("load raw sh: %p, %lu\n", shape, sh_xlb*8*sh_yl);
-	char fn[256];
-	sprintf(fn, "out%d.dat", c++);
-	int f = open(fn, O_CREAT | O_TRUNC | O_WRONLY, 0644);
-	for (int i = 0; i < 10; i++) printf("%02X ", shape[i]);
-	int x = write(f, shape, sh_xlb*sh_yl);
-	printf("wrote %d - %dx%d\n", sh_xlb*sh_yl, sh_xlb, sh_yl);
-	perror("write");
-	close(f);
-*/
 	return;
 }
 
 void lcopypage(void)
 {
+	SDL_Flip(::screen);
 	// ???
 }
 
@@ -323,7 +336,7 @@ extern "C" {
 void StartWorx(void)
 {
 	SDL_Init(SDL_INIT_VIDEO);
-	::screen = SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT, 8, SDL_HWPALETTE);// | SDL_DOUBLEBUF);
+	::screen = SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT, 8, SDL_HWPALETTE | SDL_DOUBLEBUF);
 }
 
 void CloseWorx(void)

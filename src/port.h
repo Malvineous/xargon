@@ -25,7 +25,7 @@ unsigned long coreleft(void);
 #include <unistd.h>
 unsigned long filelength(int fd);
 void delay(int s);
-char getclock();
+int getclock();
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
 #define max(a, b) ((a) > (b) ? (a) : (b))

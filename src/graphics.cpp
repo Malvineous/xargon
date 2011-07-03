@@ -216,7 +216,7 @@ int getportnum (void) {
 	};
 
 void pageflip (void) {
-	//SDL_Flip(::screen);
+	SDL_Flip(::screen);
 return;
 	int portnum;
 	pageshow=!pageshow;
