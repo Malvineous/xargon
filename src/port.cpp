@@ -278,17 +278,26 @@ void plot_vga (int x, int y, byte color)
 void ldrawsh_vga (vptype *vp, int draw_x, int draw_y, int sh_xlb, int sh_yl,
 	char far *shape, int cmtable)
 {
+	// Crop the draw to fit within the viewport
+	int startx = 0, y = 0;
+	if (draw_y < 0) y = -draw_y;
+	if (draw_x < 0) startx = -draw_x;
+
+	int actual_width;
+	if (draw_x + sh_xlb > vp->vpxl) {
+		actual_width = vp->vpxl - draw_x;
+	} else {
+		actual_width = sh_xlb;
+	}
+	if (draw_y + sh_yl > vp->vpyl) {
+		sh_yl = vp->vpyl - draw_y;
+	}
+
+	// Convert the viewport coords into screen coords
 	draw_x += vp->vpx;
 	draw_y += vp->vpy;
-
-	// If the draw starts off the edge of the screen, skip that bit
-	int startx = 0, y = 0;
-	/* The game seems to ignore these entirely (see top two rows of screen pixels at main menu)
-	if (draw_y < 0) y += -draw_y;*/
-	if (draw_x < 0) startx += -draw_x;
-
-	if ((draw_x < 0) || (draw_y < 0)) {
-		//printf("Tried to draw at negative screen coordinates! (%d,%d)\n", draw_x, draw_y);
+	if ((draw_x+startx < 0) || (draw_y+y < 0)) {
+		printf("Tried to draw at negative screen coordinates! (%d,%d)\n", draw_x, draw_y);
 		return;
 	}
 
@@ -298,9 +307,7 @@ void ldrawsh_vga (vptype *vp, int draw_x, int draw_y, int sh_xlb, int sh_yl,
 
 	// TODO: optimise by incrementing shape ptr instead
 	for (; y < sh_yl; y++) {
-		if (draw_y + y >= SCREEN_HEIGHT) break;
-		for (int x = startx; x < sh_xlb; x++) {
-			if (draw_x + x >= SCREEN_WIDTH) break;
+		for (int x = startx; x < actual_width; x++) {
 			uint8_t pixel = shape[y * sh_xlb + x];
 			pixel = cmtab[cmtable][pixel];
 			if (pixel == 255) continue; // transparent
