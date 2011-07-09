@@ -1,0 +1,29 @@
+Xargon - Copyright 1992-1994 Allen Pilgrim
+This port of Xargon is by Adam Nielsen <malvineous@shikadi.net>
+
+You will need SDL available to build this port.
+
+Build instructions:
+
+ ./autogen.sh        # Only needed if building git version
+ ./configure && make
+
+This will produce ./src/xrfile01 which should be placed in the same directory
+as the Xargon data files (just like the DOS .EXE file.)  If you don't have the
+data files handy, all three episodes have been released as freeware and can be
+downloaded from http://www.classicdosgames.com/game/Xargon.html
+
+If you encounter any problems with this port or need help, please ask on the
+RGB Classic Games forum at http://www.classicdosgames.com/forum/  You can also
+get help here if you are stuck somewhere in the game!
+
+Known issues:
+
+ - Levels scroll right to left when first loading.
+
+ - Pop up messages (e.g. when collecting fruit or presents) loads >2GB data for
+   the message box, taking a long time and showing random characters.
+
+ - Some dialogs don't display (overhead map diaries, main menu instructions.)
+
+ - No sound or music yet.
