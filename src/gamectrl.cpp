@@ -354,6 +354,7 @@ void getmac (void) {
 		if ((macabort==0)||((macabort==1)&&(tempkey==27))) {
 			stopmac();
 			macaborted=1;
+			return; // PORT: Avoid null pointer when assigning 'bits' below
 			};
 		};
 	key=0;

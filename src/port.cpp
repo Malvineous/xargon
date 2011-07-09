@@ -193,14 +193,20 @@ intfunc getvect(int interrupt)
 
 int k_pressed(void)
 {
-	// TODO
-	return 0;
+	SDL_Event ev;
+	SDL_PumpEvents();
+	return SDL_PeepEvents(&ev, 1, SDL_PEEKEVENT, SDL_KEYDOWNMASK);
 }
 
 int k_read(void)
 {
-	// TODO
-	return 0;
+	SDL_Event ev;
+	while (SDL_WaitEvent(&ev)) {
+		if (ev.type == SDL_KEYDOWN) {
+			return ev.key.keysym.sym;
+		}
+	}
+	return -1;
 }
 
 char k_rshift, k_lshift, k_shift, k_ctrl, k_alt, k_numlock;
