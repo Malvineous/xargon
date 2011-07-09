@@ -1,5 +1,7 @@
 #include "port.h"
 
+#include <vector>
+
 SDL_Surface *screen;
 #define SCREEN_WIDTH 320
 #define SCREEN_HEIGHT 200
@@ -383,14 +385,77 @@ void WorxBugInt8(void)
 
 extern "C" {
 
+struct sounddata {
+	uint8_t *data;
+	int len;
+	int samplerate;
+	int vol;
+	int pos;
+} sound;
+
+#define min(a, b) (((a) < (b)) ? (a) : (b))
+uint16_t sound_buffer[2048];
+void fillAudioBuffer(void *udata, Uint8 *stream, int len)
+{
+	int bufvalid_bytes = min(len, sizeof(sound_buffer));
+	int bufvalid = bufvalid_bytes / sizeof(uint16_t);
+
+	// Mix in the music
+	memset(sound_buffer, 0, bufvalid_bytes);
+
+	// Play the next bit of the sound effect if needed
+	if (::sound.len > 0) {
+		// Take U8 sound at any rate, convert to S16 48kHz and mix with music
+		double ratio = sound.samplerate / 48000.0;
+		for (int i = 0; i < bufvalid; i++) {
+			int j = ::sound.pos + (int)(i * ratio);
+			if (j >= ::sound.len) break;
+			sound_buffer[i] /= 2;
+			sound_buffer[i] = (::sound.data[j] - 127) * (254/2);
+		}
+		::sound.pos += bufvalid * ratio; // TODO: might drop a sample or two...
+		if (::sound.pos >= ::sound.len) ::sound.len = 0; // end of sound
+	}
+	SDL_MixAudio(stream, (Uint8 *)sound_buffer, bufvalid_bytes, SDL_MIX_MAXVOLUME);
+	return;
+}
+
+typedef struct {
+	char name[13];
+	char *data;
+} music_file;
+
+std::vector<music_file> music_data;
+
 void StartWorx(void)
 {
-	SDL_Init(SDL_INIT_VIDEO);
+	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 	::screen = SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT, 8, SDL_HWPALETTE | SDL_DOUBLEBUF);
+
+	SDL_AudioSpec wanted;
+	wanted.freq = 48000;
+	wanted.format = AUDIO_S16;
+	wanted.channels = 1;
+	wanted.samples = 2048;
+	wanted.callback = fillAudioBuffer;
+	wanted.userdata = NULL;
+	if (SDL_OpenAudio(&wanted, NULL) < 0) {
+		printf("Couldn't open sound device in given audio format - no sound!\n");
+		//::vocflag = 0;
+		//::musicflag = 0;
+	}
+	::sound.len = 0;
+	SDL_PauseAudio(0);
+
+	return;
 }
 
 void CloseWorx(void)
 {
+	// Release any CMF files that were loaded
+	for (std::vector<music_file>::iterator i = ::music_data.begin(); i != ::music_data.end(); i++) {
+		delete[] i->data;
+	}
 	SDL_Quit();
 }
 
@@ -406,11 +471,12 @@ int SetFMVolume(unsigned char left, unsigned char right)
 
 int DSPReset(void)
 {
-	return 0; // no DSP
+	return 1; // DSP present
 }
 
 void DSPClose(void)
 {
+	SDL_CloseAudio();
 	return;
 }
 
@@ -426,8 +492,19 @@ void StopSequence(void)
 
 char *GetSequence(char *f_name)
 {
-	// TODO: load file contents?
-	return NULL;
+	for (std::vector<music_file>::iterator i = ::music_data.begin(); i != ::music_data.end(); i++) {
+		// If the file has already been loaded, return the existing data
+		if (strcmp(f_name, i->name) == 0) return i->data;
+	}
+	// File hasn't been loaded, do that now
+	music_file cmf;
+	strcpy(cmf.name, f_name);
+	int handle = _open(f_name, O_BINARY);
+	int len = filelength(handle);
+	cmf.data = new char[len];
+	if (!read(handle, cmf.data, len)) return NULL;
+	printf("Loaded CMF file %s\n", cmf.name);
+	return cmf.data;
 }
 
 void SetLoopMode(int m)
@@ -437,11 +514,35 @@ void SetLoopMode(int m)
 
 int VOCPlaying(void)
 {
-	return 0;
+	return ::sound.len > 0;
 }
 
+#define SND_CROP 2 // cut this many bytes off the start of the sound
 int PlayVOCBlock(char *voc, int volume)
 {
+	uint8_t *vocdata = (uint8_t *)voc;
+	if (strncmp(voc, "Creative Voice File\x1A", 20) != 0) {
+		printf("Tried to play non-VOC file\n");
+		return -1;
+	}
+
+	::sound.data = vocdata + 0x20 + SND_CROP; // TODO: use correct offset (only if nonstandard files are used?)
+	switch (vocdata[0x1A]) {
+		case 1: // normal sound
+			if (vocdata[0x1F] != 0) {
+				printf("Packed VOC data not implemented, ignoring sound\n");
+				break;
+			}
+			::sound.len = (vocdata[0x1B] | (vocdata[0x1C] << 8) | (vocdata[0x1D] << 16)) - SND_CROP;
+			::sound.vol = volume;
+			::sound.pos = 0;
+			::sound.samplerate = 1000000 / (256 - vocdata[0x1E]);
+			printf("Sample rate is %dHz (byte val %u)\n", ::sound.samplerate, vocdata[0x1E]);
+			break;
+		default:
+			printf("VOC sound has unknown block type %d, ignoring\n", vocdata[0x1A]);
+			break;
+	}
 	return 0;
 }
 
