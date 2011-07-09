@@ -14,7 +14,7 @@
 #include "include/cfg_win.h"
 
 int c_len=CFG_WIN_LENGTH;
-unsigned char CFG_WIN[];
+extern unsigned char CFG_WIN[];
 
 char pgmname[]="XARGON_2";
 char xshafile[]="graphics.xr2";

@@ -1,4 +1,4 @@
-bin_PROGRAMS = xrfile01
+bin_PROGRAMS = xrfile01 xrfile02 xrfile03
 
 CORE_FILES = _xargon.cpp
 CORE_FILES += config.cpp
@@ -19,6 +19,8 @@ CORE_FILES += x_player.cpp
 CORE_FILES += port.cpp
 
 xrfile01_SOURCES = $(CORE_FILES) x_vol1.cpp
+xrfile02_SOURCES = $(CORE_FILES) x_vol2.cpp
+xrfile03_SOURCES = $(CORE_FILES) x_vol3.cpp
 
 AM_CPPFLAGS = $(sdl_CFLAGS) -Wno-write-strings -fpermissive
 AM_LDFLAGS = $(sdl_LIBS)
