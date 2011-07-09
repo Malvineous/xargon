@@ -249,8 +249,46 @@ void clrvp (vptype *vp,byte col)
 
 void scrollvp (vptype *vp,int xd,int yd)
 {
-	// TODO
-	printf("todo: scrollvp\n");
+	// TODO: This function is required to scroll message boxes, but it doesn't
+	// seem to be needed for in-game scrolling, and seems to slow things down.
+	printf("todo: scrollvp(%d,%d)\n", xd, yd);
+
+	if (SDL_MUSTLOCK(::screen)) {
+		if (SDL_LockSurface(::screen) < 0) return;
+	}
+
+	int ydir, ystart, yend;
+	if (yd < 0) {
+		ydir = 1;
+		ystart = vp->vpy;
+		yend = ystart + vp->vpyl;
+	} else {
+		ydir = -1;
+		yend = vp->vpy - 1;
+		ystart = yend + vp->vpyl;
+	}
+	int xsrc, xdest, xlen;
+	if (xd < 0) {
+		xsrc = vp->vpx - xd;
+		xdest = vp->vpx;
+		xlen = vp->vpxl + xd;
+	} else {
+		xsrc = vp->vpx;
+		xdest = vp->vpx + xd;
+		xlen = vp->vpxl - xd;
+	}
+	uint8_t *s = (uint8_t *)::screen->pixels;
+	for (int y = ystart; (yd < 0) ? (y < yend) : (y > yend); y += ydir) {
+		memcpy(
+			&s[y * SCREEN_WIDTH + xdest],
+			&s[(y - yd) * SCREEN_WIDTH + xsrc],
+			xlen
+		);
+	}
+
+	if (SDL_MUSTLOCK(::screen)) SDL_UnlockSurface(::screen);
+
+	if (drawofs == showofs) SDL_Flip(::screen);
 	return;
 }
 
@@ -271,6 +309,7 @@ void plot_vga (int x, int y, byte color)
 
 	if (SDL_MUSTLOCK(::screen)) SDL_UnlockSurface(::screen);
 
+	if (drawofs == showofs) SDL_Flip(::screen);
 	return;
 }
 
@@ -317,13 +356,14 @@ void ldrawsh_vga (vptype *vp, int draw_x, int draw_y, int sh_xlb, int sh_yl,
 
 	if (SDL_MUSTLOCK(::screen)) SDL_UnlockSurface(::screen);
 
+	if (drawofs == showofs) SDL_Flip(::screen);
 	return;
 }
 
 void lcopypage(void)
 {
 	SDL_Flip(::screen);
-	// ???
+	return;
 }
 
 void uncrunch (char *sourceptr, char *destptr, int length)
