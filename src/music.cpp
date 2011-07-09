@@ -32,18 +32,18 @@ int SetWORX=0;
 int oldfreq;
 int soundptr,soundlen;
 
-long vocposn [num_samps];
-int voclen [num_samps];
-int vocrate [num_samps];
-char vocnum [num_samps];
+int32_t vocposn [num_samps];
+int16_t voclen [num_samps];
+int16_t vocrate [num_samps];
+int8_t vocnum [num_samps];
 
-long textposn [num_text];
-int textlen [num_text];
-unsigned int vocused [num_samps];
-unsigned int vocuse=0;
+int32_t textposn [num_text];
+int16_t textlen [num_text];
+uint16_t vocused [num_samps];
+uint16_t vocuse=0;
 char *soundmac [num_macs];
 char *textmsg;
-int textmsglen;
+int16_t textmsglen;
 
 unsigned int clockrate,clockcount;
 

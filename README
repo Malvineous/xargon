@@ -21,9 +21,8 @@ Known issues:
 
  - Levels scroll right to left when first loading.
 
- - Pop up messages (e.g. when collecting fruit or presents) loads >2GB data for
-   the message box, taking a long time and showing random characters.
-
- - Some dialogs don't display (overhead map diaries, main menu instructions.)
+ - Popup message boxes don't scroll.
 
  - No sound or music yet.
+
+ - Will only run on little-endian CPUs due to endian-specific file handling.
