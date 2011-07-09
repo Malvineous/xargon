@@ -1,7 +1,0 @@
-Kiloblaster and Xargon Freeware License - 4 August 2008
-Kiloblaster and Xargon are (c)1992-1994 Allen Pilgrim
---------------------------------------------
-
-Finally, I included the source code for "Kiloblaster" and "Xargon." My intent is to allow people to use this in any way they choose, including to create a commercial product. The two limitations are: 1) They can't release a game that in any way resembles either of my games and, 2) They can't use it for anything pornographic, illegal or in any way immoral. Those are my only requirements.
-
-Allen Pilgrim
