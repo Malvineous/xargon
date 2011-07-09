@@ -11,6 +11,7 @@ char *ultoa(unsigned long val, char *str, int base)
 	sprintf(str, "%lu", val);
 	return str;
 }
+#ifndef __WIN32
 char *itoa(int val, char *str, int base)
 {
 	sprintf(str, "%d", val);
@@ -30,11 +31,6 @@ char *strupr(char *s)
 	return o;
 }
 
-unsigned long coreleft(void)
-{
-	return 1234;
-}
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -43,6 +39,12 @@ unsigned long filelength(int fd)
 	struct stat buf;
 	fstat(fd, &buf);
 	return buf.st_size;
+}
+#endif
+
+unsigned long coreleft(void)
+{
+	return 1234;
 }
 
 void delay(int ms)
@@ -103,9 +105,10 @@ void clrscr(void)
 }
 
 #include <stdlib.h>
+#include <cstdlib>
 int xr_random(int max)
 {
-	return random() / (RAND_MAX / max);
+	return rand() / (RAND_MAX / max);
 }
 
 #include <string.h>

@@ -7,9 +7,12 @@
 //#include <stdlib.h>
 
 char *ultoa(unsigned long val, char *str, int base);
+#ifndef __WIN32
 char *itoa(int val, char *str, int base);
 char *ltoa(long val, char *str, int base);
 char *strupr(char *s);
+unsigned long filelength(int fd);
+#endif
 
 #define _creat creat
 #define _close close
@@ -23,7 +26,6 @@ unsigned long coreleft(void);
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-unsigned long filelength(int fd);
 void delay(int s);
 int getclock();
 
