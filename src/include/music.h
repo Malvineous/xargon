@@ -1,6 +1,8 @@
 //		MUSIC.H Generalized sound driver - header
 //		Copyright 1991 Epic MegaGames, Written by Tim Sweeney
 
+#include <stdint.h>
+
 #define num_samps 50
 #define num_text  40
 #define num_macs  128

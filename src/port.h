@@ -12,12 +12,12 @@ char *itoa(int val, char *str, int base);
 char *ltoa(long val, char *str, int base);
 char *strupr(char *s);
 unsigned long filelength(int fd);
+#define O_BINARY  0 // unused on POSIX
 #endif
 
 #define _creat creat
 #define _close close
 #define _open open
-#define O_BINARY  0 // unused on POSIX
 #define _read read
 #define _write write
 
