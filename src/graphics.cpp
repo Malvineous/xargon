@@ -311,7 +311,7 @@ void fadein(void) {
 		//outportb(DacWrite,0);
 		//for (i=0;i<(256*3);i++) outportb(DacData,currentpal[i]);
 		SDL_SetPalette(::screen, SDL_LOGPAL | SDL_PHYSPAL, currentpal, 0, 256);
-		// TODO: Delay
+		SDL_Flip(::screen);
 		usleep(750/64*1000);
 		};
 	printf("fadein done\n");
@@ -329,6 +329,7 @@ void setcolor (int c, int n1, int n2, int n3) {
 	n.g = pal6to8(n2);
 	n.b = pal6to8(n3);
 	SDL_SetPalette(::screen, SDL_LOGPAL | SDL_PHYSPAL, &n, c, 1);
+	SDL_Flip(::screen);
 	};
 
 void fadeout(void) {
@@ -350,7 +351,7 @@ void fadeout(void) {
 		//outportb(DacWrite,0);
 		//for (i=0;i<256*3;i++) outportb(DacData,currentpal[i]);
 		SDL_SetPalette(::screen, SDL_LOGPAL | SDL_PHYSPAL, currentpal, 0, 256);
-		// TODO: Delay
+		SDL_Flip(::screen);
 		usleep(750/64*1000);
 		};
 	};
