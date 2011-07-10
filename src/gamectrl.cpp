@@ -140,6 +140,7 @@ void checkctrl (int pollflag) {
 	reloop:
 	key=0;
 	//if (k_pressed()) {
+getNextEvent:
 	if (SDL_PollEvent(&event)) {
 		//key=k_read();
 		//if ((key==0)|(key==1)|(key==2)) key=k_read();
@@ -167,6 +168,8 @@ void checkctrl (int pollflag) {
 					default: newkey = event.key.keysym.sym; break;
 				}
 				break;
+			default:
+				goto getNextEvent;
 		}
 		switch (event.type) {
 			case SDL_KEYUP:
