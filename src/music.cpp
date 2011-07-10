@@ -270,7 +270,7 @@ int sb_playing (void) {
 void sb_shutup (void) {
 	if (musicflag) {
 		StopSequence();
-		free(song);
+//		free(song); // PORT
 		song=NULL;
 		};
 	};

@@ -17,10 +17,11 @@ CORE_FILES += x_obj2.cpp
 CORE_FILES += x_obj3.cpp
 CORE_FILES += x_player.cpp
 CORE_FILES += port.cpp
+CORE_FILES += dbopl.cpp
 
 xrfile01_SOURCES = $(CORE_FILES) x_vol1.cpp
 xrfile02_SOURCES = $(CORE_FILES) x_vol2.cpp
 xrfile03_SOURCES = $(CORE_FILES) x_vol3.cpp
 
-AM_CPPFLAGS = $(sdl_CFLAGS) -Wno-write-strings -fpermissive
-AM_LDFLAGS = $(sdl_LIBS)
+AM_CPPFLAGS = $(sdl_CFLAGS) -Wno-write-strings -fpermissive $(libgamemusic_CFLAGS)
+AM_LDFLAGS = $(sdl_LIBS) $(libgamemusic_LIBS)

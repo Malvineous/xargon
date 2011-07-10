@@ -16,6 +16,7 @@ AC_PROG_CXX
 AC_PROG_LIBTOOL
 
 PKG_CHECK_MODULES([sdl], [sdl])
+PKG_CHECK_MODULES([libgamemusic], [libgamemusic])
 
 # Checks for header files.
 

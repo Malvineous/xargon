@@ -1,7 +1,11 @@
 Xargon - Copyright 1992-1994 Allen Pilgrim
-This port of Xargon is by Adam Nielsen <malvineous@shikadi.net>
+This port of Xargon is Copyright 2011 Adam Nielsen <malvineous@shikadi.net>
+The included DOSBox OPL synth is Copyright 2002-2010 The DOSBox Team
 
-You will need SDL available to build this port.
+All code is covered under the GNU GPL license.  Unless otherwise stated in a
+given file, it is version 3 of the GPL.
+
+You will need SDL and libgamemusic available to build this port.
 
 Build instructions:
 
@@ -20,7 +24,5 @@ get help here if you are stuck somewhere in the game!
 Known issues:
 
  - Levels scroll right to left when first loading.
-
- - No music yet.
 
  - Will only run on little-endian CPUs due to endian-specific file handling.

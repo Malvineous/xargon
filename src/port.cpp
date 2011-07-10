@@ -1,6 +1,14 @@
-#include "port.h"
+// Xargon SDL port
+// Copyright 2011 Adam Nielsen <malvineous@shikadi.net>
 
+#include "port.h"
+#include "dbopl.h"
 #include <vector>
+#include <sstream>
+#include <fstream>
+#include <camoto/gamemusic.hpp>
+#include <SDL_mutex.h>
+namespace gm = camoto::gamemusic;
 
 SDL_Surface *screen;
 #define SCREEN_WIDTH 320
@@ -389,7 +397,39 @@ void WorxBugInt8(void)
 {
 }
 
+class SampleHandler: public MixerChannel {
+	public:
+		uint8_t *buf;
+
+		virtual void AddSamples_m32(Bitu samples, Bit32s *buffer)
+		{
+			// Convert samples from mono s32 to s16
+			int16_t *out = (int16_t *)this->buf;
+			for (int i = 0; i < samples; i++) {
+				*out++ = buffer[i] << 2;
+			}
+			return;
+		}
+
+		virtual void AddSamples_s32(Bitu samples, Bit32s *buffer)
+		{
+			// Convert samples from stereo s32 to s16
+			printf("TODO: Stereo samples are not yet implemented!\n");
+			return;
+		}
+};
+
 extern "C" {
+
+struct oplinfo {
+	SampleHandler *sh;
+	DBOPL::Handler *chip;
+	uint8_t *cur_song;     // pointer to start of song file
+	int song_pos;          // current file pointer in cur_song
+	int song_len;          // length of song in bytes
+	int delay_remaining;   // delay until next music event in number of audio buffers
+	SDL_mutex *mutex;
+} opl;
 
 struct sounddata {
 	uint8_t *data;
@@ -400,35 +440,59 @@ struct sounddata {
 } sound;
 
 #define min(a, b) (((a) < (b)) ? (a) : (b))
-uint16_t sound_buffer[2048];
+int16_t sound_buffer[2048];
 void fillAudioBuffer(void *udata, Uint8 *stream, int len)
 {
 	int bufvalid_bytes = min(len, sizeof(sound_buffer));
-	int bufvalid = bufvalid_bytes / sizeof(uint16_t);
+	int bufvalid_samples = bufvalid_bytes / sizeof(int16_t);
 
 	// Mix in the music
-	memset(sound_buffer, 0, bufvalid_bytes);
+	SDL_mutexP(::opl.mutex);
+	if (::opl.cur_song) {
+		::opl.sh->buf = (uint8_t *)sound_buffer;
+		int opl_samples = bufvalid_samples;
+		do {
+			while (::opl.delay_remaining == 0) {
+				// No more delay, process song data until next delay
+				::opl.chip->WriteReg(::opl.cur_song[::opl.song_pos], ::opl.cur_song[::opl.song_pos + 1]);
+				::opl.delay_remaining = ::opl.cur_song[::opl.song_pos + 2] | (::opl.cur_song[::opl.song_pos + 3] << 8);
+				::opl.delay_remaining = ::opl.delay_remaining * (48000/512) / 560;
+				::opl.song_pos += 4;
+				if (::opl.song_pos >= ::opl.song_len) ::opl.song_pos = 0; // loop
+			}
+			::opl.chip->Generate(::opl.sh, min(512, bufvalid_samples));
+			opl_samples -= 512;
+			::opl.sh->buf += 512 * sizeof(int16_t);
+			::opl.delay_remaining--;
+		} while (opl_samples >= 512);
+	} else {
+		// No music
+		memset(sound_buffer, 0, bufvalid_bytes);
+	}
+	SDL_mutexV(::opl.mutex);
 
 	// Play the next bit of the sound effect if needed
 	if (::sound.len > 0) {
 		// Take U8 sound at any rate, convert to S16 48kHz and mix with music
 		double ratio = sound.samplerate / 48000.0;
-		for (int i = 0; i < bufvalid; i++) {
+		for (int i = 0; i < bufvalid_samples; i++) {
 			int j = ::sound.pos + (int)(i * ratio);
 			if (j >= ::sound.len) break;
-			sound_buffer[i] /= 2;
-			sound_buffer[i] = (::sound.data[j] - 127) * (254/2);
+			//sound_buffer[i] /= 2;
+			sound_buffer[i] += (::sound.data[j] - 127) * (254/2);
 		}
-		::sound.pos += bufvalid * ratio; // TODO: might drop a sample or two...
+		::sound.pos += bufvalid_samples * ratio; // TODO: might drop a sample or two...
 		if (::sound.pos >= ::sound.len) ::sound.len = 0; // end of sound
 	}
 	SDL_MixAudio(stream, (Uint8 *)sound_buffer, bufvalid_bytes, SDL_MIX_MAXVOLUME);
+
 	return;
 }
 
+// Cache a loaded music file so we don't have to reconvert it on each song change
 typedef struct {
 	char name[13];
-	char *data;
+	uint8_t *data;
 } music_file;
 
 std::vector<music_file> music_data;
@@ -437,6 +501,11 @@ void StartWorx(void)
 {
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 	::screen = SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT, 8, SDL_HWPALETTE | SDL_DOUBLEBUF);
+
+	::opl.cur_song = NULL;
+	::sound.len = 0;
+
+	::opl.mutex = SDL_CreateMutex();
 
 	SDL_AudioSpec wanted;
 	wanted.freq = 48000;
@@ -450,7 +519,10 @@ void StartWorx(void)
 		//::vocflag = 0;
 		//::musicflag = 0;
 	}
-	::sound.len = 0;
+
+	::opl.sh = new SampleHandler();
+	::opl.chip = new DBOPL::Handler();
+	::opl.chip->Init(48000);
 	SDL_PauseAudio(0);
 
 	return;
@@ -458,11 +530,16 @@ void StartWorx(void)
 
 void CloseWorx(void)
 {
+	SDL_DestroyMutex(::opl.mutex);
+
 	// Release any CMF files that were loaded
 	for (std::vector<music_file>::iterator i = ::music_data.begin(); i != ::music_data.end(); i++) {
 		delete[] i->data;
 	}
 	SDL_Quit();
+
+	delete ::opl.chip;
+	delete ::opl.sh;
 }
 
 int AdlibDetect(void)
@@ -493,6 +570,10 @@ int SetMasterVolume(unsigned char left, unsigned char right)
 
 void StopSequence(void)
 {
+	::opl.cur_song = NULL;
+	// Silence the OPL chip
+	::opl.chip->WriteReg(0xBD, 0x00);
+	for (int i = 0; i < 9; i++) ::opl.chip->WriteReg(0xB0 + i, 0x00);
 	return;
 }
 
@@ -500,21 +581,65 @@ char *GetSequence(char *f_name)
 {
 	for (std::vector<music_file>::iterator i = ::music_data.begin(); i != ::music_data.end(); i++) {
 		// If the file has already been loaded, return the existing data
-		if (strcmp(f_name, i->name) == 0) return i->data;
+		if (strcmp(f_name, i->name) == 0) return (char *)i->data;
 	}
+
 	// File hasn't been loaded, do that now
+	gm::ManagerPtr pManager(gm::getManager());
+	boost::shared_ptr<std::ifstream> psMusic(new std::ifstream());
+	psMusic->exceptions(std::ios::badbit | std::ios::failbit);
+	try {
+		psMusic->open(f_name, std::ios::in | std::ios::binary);
+	} catch (std::ios::failure& e) {
+		fprintf(stderr, "Error opening %s\n", f_name);
+		return NULL;
+	}
+	gm::MusicTypePtr pMusicType(pManager->getMusicTypeByCode("cmf-creativelabs"));
+	if (!pMusicType->isInstance(psMusic)) {
+		printf("File %s is not in CMF format!\n", f_name);
+		return NULL;
+	}
+	camoto::SuppData suppData;
+	gm::MusicReaderPtr pMusicIn(pMusicType->open(psMusic, suppData));
+	assert(pMusicIn);
+	gm::PatchBankPtr instruments = pMusicIn->getPatchBank();
+
+	boost::shared_ptr<std::stringstream> pss(new std::stringstream);
+	gm::MusicTypePtr pMusicOutType(pManager->getMusicTypeByCode("imf-idsoftware-type1"));
+	boost::shared_ptr<gm::MusicWriter> pMusicOut(pMusicOutType->create(pss, suppData));
+	assert(pMusicOut);
+	pMusicOut->setPatchBank(instruments);
+	pMusicOut->start();
+
+	try {
+		for (;;) {
+			gm::EventPtr next = pMusicIn->readNextEvent();
+			if (!next) break; // end of song
+			next->processEvent(pMusicOut.get());
+		}
+	} catch (...) {
+		// Write the output file's footer to prevent an assertion failure
+		pMusicOut->finish();
+		throw;
+	}
+
+	// Write the output file's footer
+	pMusicOut->finish();
+
 	music_file cmf;
 	strcpy(cmf.name, f_name);
-	int handle = _open(f_name, O_BINARY);
-	int len = filelength(handle);
-	cmf.data = new char[len];
-	if (!read(handle, cmf.data, len)) return NULL;
+	std::string imfdata = pss->str();
+	int len = imfdata.length();
+	cmf.data = new uint8_t[len];
+	memcpy(cmf.data, imfdata.data(), len);
+	::music_data.push_back(cmf);
 	printf("Loaded CMF file %s\n", cmf.name);
-	return cmf.data;
+	return (char *)cmf.data;
 }
 
 void SetLoopMode(int m)
 {
+	// Always called with m=1 to loop music
 	return;
 }
 
@@ -554,6 +679,20 @@ int PlayVOCBlock(char *voc, int volume)
 
 void PlayCMFBlock(char *seq)
 {
+	SDL_mutexP(::opl.mutex);
+
+	// Init the OPL chip
+	::opl.chip->WriteReg(0x01, 0x20);
+	::opl.chip->WriteReg(0xBD, 0x00);
+	for (int i = 0; i < 9; i++) ::opl.chip->WriteReg(0xB0 + i, 0x00);
+
+	uint8_t *s = (uint8_t *)seq;
+	::opl.cur_song = s + 2; // +2 is to skip type-1 IMF header
+	::opl.song_pos = 0;
+	::opl.song_len = s[0] | (s[1] << 8);
+	::opl.delay_remaining = 0;
+
+	SDL_mutexV(::opl.mutex);
 	return;
 }
 
