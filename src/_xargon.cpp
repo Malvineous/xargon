@@ -298,7 +298,7 @@ void savecfg (void) {
 void loadboard (char *fname) {
 	int boardfile;
 	char dest[16];
-	uint16_t c,tempint;
+	int16_t c,tempint;
 	int x,y;
 
 	// purging all shapes from memory to prevent memory fragmentation
@@ -366,7 +366,7 @@ void loadboard (char *fname) {
 void saveboard (char *fname) {
 	int boardfile;
 	char dest[16];
-	int c,tempint;
+	int16_t c,tempint;
 
 	strcpy (dest,fname);
 	if (strcmp(dest,tempname)!=0) strcat (dest,ext);
@@ -1136,7 +1136,7 @@ void gamemenu (void) {
 				pageflip(); setpagemode(0); fadein();
 				}
 			else done=1;
-			}                                   
+			}
 		else if (key=='I') {dotextmsg(1,0); done=1;}
 		else if (key=='A') {										// INVENTORY
 			setpagemode(0); inv_win(); done=1;
