@@ -79,13 +79,13 @@ void cputs(const char *s)
 
 void textcolor(int c)
 {
-	printf("\033[%d;%dm", (c & 8) ? 1 : 22, 30 + (((c & 1) << 2) | ((c & 4) >> 2) | (c & 2)));
+//	printf("\033[%d;%dm", (c & 8) ? 1 : 22, 30 + (((c & 1) << 2) | ((c & 4) >> 2) | (c & 2)));
 	return;
 }
 
 void textbackground(int c)
 {
-	printf("\033[%dm", 40 + ((c & 1) << 2) | ((c & 4) >> 2) | (c & 2));
+//	printf("\033[%dm", 40 + ((c & 1) << 2) | ((c & 4) >> 2) | (c & 2));
 	return;
 }
 
@@ -106,13 +106,13 @@ void window(int x, int y, int w, int h)
 
 void gotoxy(int x, int y)
 {
-	printf("\033[%d;%dH", x, y);
+//	printf("\033[%d;%dH", x, y);
 	return;
 }
 
 void clrscr(void)
 {
-	printf("\033[2J");
+//	printf("\033[2J");
 	return;
 }
 
