@@ -28,4 +28,7 @@ libtool
 *.lo
 *.la
 
+# Binaries
 src/xrfile01
+src/xrfile02
+src/xrfile03
