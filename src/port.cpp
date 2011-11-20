@@ -572,10 +572,14 @@ int SetMasterVolume(unsigned char left, unsigned char right)
 
 void StopSequence(void)
 {
+	SDL_mutexP(::opl.mutex);
+
 	::opl.cur_song = NULL;
 	// Silence the OPL chip
 	::opl.chip->WriteReg(0xBD, 0x00);
 	for (int i = 0; i < 9; i++) ::opl.chip->WriteReg(0xB0 + i, 0x00);
+
+	SDL_mutexV(::opl.mutex);
 	return;
 }
 
