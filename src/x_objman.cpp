@@ -174,8 +174,8 @@ void p_ouch (int healthtake, int diemode) {
 	};
 
 void seekplayer (int n, int16_t *dx, int16_t *dy) {
-	*dx=(objs[0].x>objs[n].x)-(objs[0].x<objs[n].x);
-	*dy=(objs[0].y>objs[n].y)-(objs[0].y<objs[n].y);
+	if (dx) *dx=(objs[0].x>objs[n].x)-(objs[0].x<objs[n].x);
+	if (dy) *dy=(objs[0].y>objs[n].y)-(objs[0].y<objs[n].y);
 	};
 
 void modscroll (int sxd, int syd, int modcode) {
