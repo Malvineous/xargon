@@ -7,6 +7,8 @@
 #include <sstream>
 #include <fstream>
 #include <camoto/gamemusic.hpp>
+#include <camoto/stream_file.hpp>
+#include <camoto/stream_string.hpp>
 #include <SDL_mutex.h>
 namespace gm = camoto::gamemusic;
 
@@ -586,11 +588,10 @@ char *GetSequence(char *f_name)
 
 	// File hasn't been loaded, do that now
 	gm::ManagerPtr pManager(gm::getManager());
-	boost::shared_ptr<std::ifstream> psMusic(new std::ifstream());
-	psMusic->exceptions(std::ios::badbit | std::ios::failbit);
+	camoto::stream::input_file_sptr psMusic(new camoto::stream::input_file());
 	try {
-		psMusic->open(f_name, std::ios::in | std::ios::binary);
-	} catch (std::ios::failure& e) {
+		psMusic->open(f_name);
+	} catch (const camoto::stream::open_error& e) {
 		fprintf(stderr, "Error opening %s\n", f_name);
 		return NULL;
 	}
@@ -604,7 +605,7 @@ char *GetSequence(char *f_name)
 	assert(pMusicIn);
 	gm::PatchBankPtr instruments = pMusicIn->getPatchBank();
 
-	boost::shared_ptr<std::stringstream> pss(new std::stringstream);
+	camoto::stream::string_sptr pss(new camoto::stream::string());
 	gm::MusicTypePtr pMusicOutType(pManager->getMusicTypeByCode("imf-idsoftware-type1"));
 	boost::shared_ptr<gm::MusicWriter> pMusicOut(pMusicOutType->create(pss, suppData));
 	assert(pMusicOut);
