@@ -257,9 +257,8 @@ void drawstats(void) {
 
 void zapobjs (void) {
 	int c;
-printf("zapping %d objs\n", numobjs);
 	for (c=0; c<numobjs; c++) {
-//PORT		if (objs[c].inside!=NULL) free(objs[c].inside);
+		if (objs[c].inside!=NULL) free(objs[c].inside);
 		};
 	init_objs();
 	};

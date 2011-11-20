@@ -673,7 +673,7 @@ int PlayVOCBlock(char *voc, int volume)
 			::sound.vol = volume;
 			::sound.pos = 0;
 			::sound.samplerate = 1000000 / (256 - vocdata[0x1E]);
-			printf("Sample rate is %dHz (byte val %u)\n", ::sound.samplerate, vocdata[0x1E]);
+			//printf("Sample rate is %dHz (byte val %u)\n", ::sound.samplerate, vocdata[0x1E]);
 			break;
 		default:
 			printf("VOC sound has unknown block type %d, ignoring\n", vocdata[0x1A]);

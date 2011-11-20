@@ -314,7 +314,6 @@ void fadein(void) {
 		SDL_Flip(::screen);
 		usleep(750/64*1000);
 		};
-	printf("fadein done\n");
 	};
 
 void setcolor (int c, int n1, int n2, int n3) {
