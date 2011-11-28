@@ -23,10 +23,6 @@ get help here if you are stuck somewhere in the game!
 
 Known issues:
 
- - Levels scroll right to left when first loading.
-
- - Only the first level works, the others don't.
-
  - Some tiles don't animate (e.g. ocean below waterfall on first level.)
 
  - Will only run on little-endian CPUs due to endian-specific file handling.
