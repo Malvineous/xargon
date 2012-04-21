@@ -605,31 +605,12 @@ char *GetSequence(char *f_name)
 		return NULL;
 	}
 	camoto::SuppData suppData;
-	gm::MusicReaderPtr pMusicIn(pMusicType->open(psMusic, suppData));
-	assert(pMusicIn);
-	gm::PatchBankPtr instruments = pMusicIn->getPatchBank();
+	gm::MusicPtr pMusic(pMusicType->read(psMusic, suppData));
+	assert(pMusic);
 
 	camoto::stream::string_sptr pss(new camoto::stream::string());
 	gm::MusicTypePtr pMusicOutType(pManager->getMusicTypeByCode("imf-idsoftware-type1"));
-	boost::shared_ptr<gm::MusicWriter> pMusicOut(pMusicOutType->create(pss, suppData));
-	assert(pMusicOut);
-	pMusicOut->setPatchBank(instruments);
-	pMusicOut->start();
-
-	try {
-		for (;;) {
-			gm::EventPtr next = pMusicIn->readNextEvent();
-			if (!next) break; // end of song
-			next->processEvent(pMusicOut.get());
-		}
-	} catch (...) {
-		// Write the output file's footer to prevent an assertion failure
-		pMusicOut->finish();
-		throw;
-	}
-
-	// Write the output file's footer
-	pMusicOut->finish();
+	pMusicOutType->write(pss, suppData, pMusic, gm::MusicType::Default);
 
 	music_file cmf;
 	strcpy(cmf.name, f_name);
