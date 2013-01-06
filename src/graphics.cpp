@@ -251,10 +251,10 @@ void vga_setpal(void) {
 		outportb(DacData,vgapal[i*3+Green]);
 		outportb(DacData,vgapal[i*3+Blue]);
 		*/
-	for (i=0;i<number;i++) {
-		clr[i].r = pal6to8(vgapal[i*3+Red  ]);
-		clr[i].g = pal6to8(vgapal[i*3+Green]);
-		clr[i].b = pal6to8(vgapal[i*3+Blue ]);
+	for (i=0;i<number-start;i++) {
+		clr[i].r = pal6to8(vgapal[(start+i)*3+Red  ]);
+		clr[i].g = pal6to8(vgapal[(start+i)*3+Green]);
+		clr[i].b = pal6to8(vgapal[(start+i)*3+Blue ]);
 		};
 
 	SDL_SetPalette(::screen, SDL_LOGPAL | SDL_PHYSPAL, clr, start, number);
@@ -405,34 +405,50 @@ void gr_exit (void) {
 
 //#if 0
 void dim (void) {
-	p_rec currentpal;
+	//p_rec currentpal;
+	SDL_Color currentpal[256];
 	int temp,i,cycle;
 
 	for (cycle=63;cycle>=31;cycle-=6) {
-		for (i=0;i<256*3;i++) {
-			temp=vgapal[i];
-			temp=(temp*cycle)>>6;
-			currentpal[i]=temp;
+		//for (i=0;i<256*3;i++) {
+		for (i=0;i<256;i++){
+			//temp=vgapal[i];
+			//temp=(temp*cycle)>>6;
+			//currentpal[i]=temp;
+			currentpal[i].r = (pal6to8(vgapal[i*3+Red  ]) * cycle) >> 6;
+			currentpal[i].g = (pal6to8(vgapal[i*3+Green]) * cycle) >> 6;
+			currentpal[i].b = (pal6to8(vgapal[i*3+Blue ]) * cycle) >> 6;
 			};
 		waitsafe();
-		outportb(DacWrite,0);
-		for (i=0;i<256*3;i++) outportb(DacData,currentpal[i]);
+		//outportb(DacWrite,0);
+		//for (i=0;i<256*3;i++) outportb(DacData,currentpal[i]);
+		SDL_SetPalette(::screen, SDL_LOGPAL | SDL_PHYSPAL, currentpal, 0, 256);
+		SDL_Flip(::screen);
+		usleep(750/64*1000);
 		};
 	};
 
 void undim (void) {
-	p_rec currentpal;
+	//p_rec currentpal;
+	SDL_Color currentpal[256];
 	int temp,i,cycle;
 
 	for (cycle=32;cycle<64;cycle+=6) {
-		for (i=0;i<(256*3);i++) {
-			temp=vgapal[i];
-			temp=(temp*cycle)>>6;
-			currentpal[i]=temp;
+		//for (i=0;i<(256*3);i++) {
+		for (i=0;i<256;i++){
+			//temp=vgapal[i];
+			//temp=(temp*cycle)>>6;
+			//currentpal[i]=temp;
+			currentpal[i].r = (pal6to8(vgapal[i*3+Red  ]) * cycle) >> 6;
+			currentpal[i].g = (pal6to8(vgapal[i*3+Green]) * cycle) >> 6;
+			currentpal[i].b = (pal6to8(vgapal[i*3+Blue ]) * cycle) >> 6;
 			};
 		waitsafe();
-		outportb(DacWrite,0);
-		for (i=0;i<(256*3);i++) outportb(DacData,currentpal[i]);
+		//outportb(DacWrite,0);
+		//for (i=0;i<(256*3);i++) outportb(DacData,currentpal[i]);
+		SDL_SetPalette(::screen, SDL_LOGPAL | SDL_PHYSPAL, currentpal, 0, 256);
+		SDL_Flip(::screen);
+		usleep(750/64*1000);
 		};
 	};
 //#endif
