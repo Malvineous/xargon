@@ -399,6 +399,13 @@ void WorxBugInt8(void)
 {
 }
 
+// Clipping function to prevent integer wraparound after amplification
+#define SAMPLE_SIZE 2
+#define SAMP_BITS (SAMPLE_SIZE << 3)
+#define SAMP_MAX ((1 << (SAMP_BITS-1)) - 1)
+#define SAMP_MIN -((1 << (SAMP_BITS-1)))
+#define CLIP(v) (((v) > SAMP_MAX) ? SAMP_MAX : (((v) < SAMP_MIN) ? SAMP_MIN : (v)))
+
 class SampleHandler: public MixerChannel {
 	public:
 		uint8_t *buf;
@@ -408,7 +415,7 @@ class SampleHandler: public MixerChannel {
 			// Convert samples from mono s32 to s16
 			int16_t *out = (int16_t *)this->buf;
 			for (int i = 0; i < samples; i++) {
-				*out++ = buffer[i] << 2;
+				*out++ = CLIP(buffer[i]);
 			}
 			return;
 		}
@@ -480,8 +487,9 @@ void fillAudioBuffer(void *udata, Uint8 *stream, int len)
 		for (int i = 0; i < bufvalid_samples; i++) {
 			int j = ::sound.pos + (int)(i * ratio);
 			if (j >= ::sound.len) break;
-			//sound_buffer[i] /= 2;
-			sound_buffer[i] += (::sound.data[j] - 127) * (254/2);
+			int32_t a = 32768 + sound_buffer[i];
+			int32_t b = 32768 + (::sound.data[j] - 127) * (254/2);
+			sound_buffer[i] = CLIP(-32768 + 2 * (a + b) - (a * b) / 32768 - 65536);
 		}
 		::sound.pos += bufvalid_samples * ratio; // TODO: might drop a sample or two...
 		if (::sound.pos >= ::sound.len) ::sound.len = 0; // end of sound
