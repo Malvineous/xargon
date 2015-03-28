@@ -6,11 +6,14 @@
 #include <vector>
 #include <sstream>
 #include <fstream>
+#include <SDL_mutex.h>
+
+#ifdef USE_MUSIC
 #include <camoto/gamemusic.hpp>
 #include <camoto/stream_file.hpp>
 #include <camoto/stream_string.hpp>
-#include <SDL_mutex.h>
 namespace gm = camoto::gamemusic;
+#endif
 
 SDL_Surface *screen;
 #define SCREEN_WIDTH 320
@@ -465,7 +468,6 @@ inline long pcm_mix_s16(long a, long b)
 		m = 2 * ((long long)a + b) - ((long long)a * b) / 32768LL - 65536;
 	}
 	if (m == 65536) m = 65535;
-	assert(m < 65536);
 	return -32768 + m;
 }
 
@@ -482,6 +484,7 @@ void fillAudioBuffer(void *udata, Uint8 *stream, int len)
 		::opl.sh->buf = (uint8_t *)sound_buffer;
 		int opl_samples = bufvalid_samples;
 		do {
+#ifdef USE_MUSIC
 			while (::opl.delay_remaining == 0) {
 				// No more delay, process song data until next delay
 				uint8_t reg = ::opl.cur_song[::opl.song_pos];
@@ -515,6 +518,7 @@ void fillAudioBuffer(void *udata, Uint8 *stream, int len)
 				::opl.delay_remaining = nextDelay * (48000/512) / 1000;
 				if (::opl.song_pos >= ::opl.song_len) ::opl.song_pos = 0; // loop
 			}
+#endif
 			::opl.chip->Generate(::opl.sh, min(512, bufvalid_samples));
 			opl_samples -= 512;
 			::opl.sh->buf += 512 * sizeof(int16_t) * 2;
@@ -639,6 +643,7 @@ void StopSequence(void)
 
 char *GetSequence(char *f_name)
 {
+#ifdef USE_MUSIC
 	for (std::vector<music_file>::iterator i = ::music_data.begin(); i != ::music_data.end(); i++) {
 		// If the file has already been loaded, return the existing data
 		if (strcmp(f_name, i->name) == 0) return (char *)i->data;
@@ -675,6 +680,9 @@ char *GetSequence(char *f_name)
 	::music_data.push_back(cmf);
 	printf("Loaded CMF file %s\n", cmf.name);
 	return (char *)cmf.data;
+#else
+	return NULL;
+#endif
 }
 
 void SetLoopMode(int m)

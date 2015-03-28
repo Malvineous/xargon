@@ -47,3 +47,7 @@ EXTRA_xrfile03_SOURCES = $(EXTRA_CORE_FILES)
 
 AM_CPPFLAGS = $(sdl_CFLAGS) -Wno-write-strings -fpermissive $(libgamemusic_CFLAGS)
 AM_LDFLAGS = $(sdl_LIBS) $(libgamemusic_LIBS)
+
+if USE_MUSIC
+AM_CPPFLAGS += -DUSE_MUSIC
+endif
