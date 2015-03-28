@@ -416,6 +416,7 @@ class SampleHandler: public MixerChannel {
 			int16_t *out = (int16_t *)this->buf;
 			for (int i = 0; i < samples; i++) {
 				*out++ = CLIP(buffer[i]);
+				*out++ = CLIP(buffer[i]);
 			}
 			return;
 		}
@@ -423,7 +424,10 @@ class SampleHandler: public MixerChannel {
 		virtual void AddSamples_s32(Bitu samples, Bit32s *buffer)
 		{
 			// Convert samples from stereo s32 to s16
-			printf("TODO: Stereo samples are not yet implemented!\n");
+			int16_t *out = (int16_t *)this->buf;
+			for (int i = 0; i < samples * 2; i++) {
+				*out++ = CLIP(buffer[i]);
+			}
 			return;
 		}
 };
@@ -438,6 +442,7 @@ struct oplinfo {
 	int song_len;          // length of song in bytes
 	int delay_remaining;   // delay until next music event in number of audio buffers
 	SDL_mutex *mutex;
+	int chipIndex;
 } opl;
 
 struct sounddata {
@@ -448,12 +453,28 @@ struct sounddata {
 	int pos;
 } sound;
 
+/// Mix two PCM samples and return the new combined sample
+inline long pcm_mix_s16(long a, long b)
+{
+	a += 32768;
+	b += 32768;
+	unsigned long m;
+	if ((a < 32768) && (b < 32768)) {
+		m = (long long)a * b / 32768LL;
+	} else {
+		m = 2 * ((long long)a + b) - ((long long)a * b) / 32768LL - 65536;
+	}
+	if (m == 65536) m = 65535;
+	assert(m < 65536);
+	return -32768 + m;
+}
+
 #define min(a, b) (((a) < (b)) ? (a) : (b))
-int16_t sound_buffer[2048];
+int16_t sound_buffer[4096];//2048];
 void fillAudioBuffer(void *udata, Uint8 *stream, int len)
 {
 	int bufvalid_bytes = min(len, sizeof(sound_buffer));
-	int bufvalid_samples = bufvalid_bytes / sizeof(int16_t);
+	int bufvalid_samples = bufvalid_bytes / sizeof(int16_t) / 2;
 
 	// Mix in the music
 	SDL_mutexP(::opl.mutex);
@@ -463,15 +484,40 @@ void fillAudioBuffer(void *udata, Uint8 *stream, int len)
 		do {
 			while (::opl.delay_remaining == 0) {
 				// No more delay, process song data until next delay
-				::opl.chip->WriteReg(::opl.cur_song[::opl.song_pos], ::opl.cur_song[::opl.song_pos + 1]);
-				::opl.delay_remaining = ::opl.cur_song[::opl.song_pos + 2] | (::opl.cur_song[::opl.song_pos + 3] << 8);
-				::opl.delay_remaining = ::opl.delay_remaining * (48000/512) / 560;
-				::opl.song_pos += 4;
+				uint8_t reg = ::opl.cur_song[::opl.song_pos];
+				uint16_t nextDelay = 0;
+				switch (reg) {
+					case 0x00:
+						nextDelay = ::opl.cur_song[::opl.song_pos + 1];
+						::opl.song_pos += 2;
+						break;
+					case 0x01:
+						nextDelay = ::opl.cur_song[::opl.song_pos + 1] | (::opl.cur_song[::opl.song_pos + 2] << 8);
+						::opl.song_pos += 3;
+						break;
+					case 0x02:
+						::opl.chipIndex = 0;
+						::opl.song_pos++;
+						break;
+					case 0x03:
+						::opl.chipIndex = 0x100;
+						::opl.song_pos++;
+						break;
+					case 0x04:
+						::opl.song_pos++;
+						reg = ::opl.cur_song[::opl.song_pos];
+						// fall through
+					default:
+						::opl.chip->WriteReg(::opl.chipIndex + reg, ::opl.cur_song[::opl.song_pos + 1]);
+						::opl.song_pos += 2;
+						break;
+				}
+				::opl.delay_remaining = nextDelay * (48000/512) / 1000;
 				if (::opl.song_pos >= ::opl.song_len) ::opl.song_pos = 0; // loop
 			}
 			::opl.chip->Generate(::opl.sh, min(512, bufvalid_samples));
 			opl_samples -= 512;
-			::opl.sh->buf += 512 * sizeof(int16_t);
+			::opl.sh->buf += 512 * sizeof(int16_t) * 2;
 			::opl.delay_remaining--;
 		} while (opl_samples >= 512);
 	} else {
@@ -487,9 +533,9 @@ void fillAudioBuffer(void *udata, Uint8 *stream, int len)
 		for (int i = 0; i < bufvalid_samples; i++) {
 			int j = ::sound.pos + (int)(i * ratio);
 			if (j >= ::sound.len) break;
-			int32_t a = 32768 + sound_buffer[i];
-			int32_t b = 32768 + (::sound.data[j] - 127) * (254/2);
-			sound_buffer[i] = CLIP(-32768 + 2 * (a + b) - (a * b) / 32768 - 65536);
+			int16_t b = CLIP((::sound.data[j] - 127) * (254/2));
+			sound_buffer[i*2] = pcm_mix_s16(sound_buffer[i*2], b);
+			sound_buffer[i*2+1] = pcm_mix_s16(sound_buffer[i*2+1], b);
 		}
 		::sound.pos += bufvalid_samples * ratio; // TODO: might drop a sample or two...
 		if (::sound.pos >= ::sound.len) ::sound.len = 0; // end of sound
@@ -520,7 +566,7 @@ void StartWorx(void)
 	SDL_AudioSpec wanted;
 	wanted.freq = 48000;
 	wanted.format = AUDIO_S16;
-	wanted.channels = 1;
+	wanted.channels = 2;
 	wanted.samples = 2048;
 	wanted.callback = fillAudioBuffer;
 	wanted.userdata = NULL;
@@ -617,12 +663,12 @@ char *GetSequence(char *f_name)
 	assert(pMusic);
 
 	camoto::stream::string_sptr pss(new camoto::stream::string());
-	gm::MusicTypePtr pMusicOutType(pManager->getMusicTypeByCode("imf-idsoftware-type1"));
+	gm::MusicTypePtr pMusicOutType(pManager->getMusicTypeByCode("dro-dosbox-v1"));
 	pMusicOutType->write(pss, suppData, pMusic, gm::MusicType::Default);
 
 	music_file cmf;
 	strcpy(cmf.name, f_name);
-	std::string imfdata = pss->str();
+	std::string imfdata = *pss->str();
 	int len = imfdata.length();
 	cmf.data = new uint8_t[len];
 	memcpy(cmf.data, imfdata.data(), len);
@@ -681,10 +727,11 @@ void PlayCMFBlock(char *seq)
 	for (int i = 0; i < 9; i++) ::opl.chip->WriteReg(0xB0 + i, 0x00);
 
 	uint8_t *s = (uint8_t *)seq;
-	::opl.cur_song = s + 2; // +2 is to skip type-1 IMF header
+	::opl.cur_song = s + 24; // 24 is to skip DROv1 header
 	::opl.song_pos = 0;
-	::opl.song_len = s[0] | (s[1] << 8);
+	::opl.song_len = (s[16] | (s[17] << 8) | (s[18] << 16) | (s[19] << 24));
 	::opl.delay_remaining = 0;
+	::opl.chipIndex = 0;
 
 	SDL_mutexV(::opl.mutex);
 	return;

@@ -31,7 +31,6 @@ extern char *xvocptr;
 extern int xvoclen;
 
 extern int soundf;
-extern int *myclock;
 void snd_init (char *newvoclib);
 void snd_play (int priority,int num);
 void snd_do (void);
