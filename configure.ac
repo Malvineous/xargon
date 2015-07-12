@@ -17,7 +17,25 @@ AC_PROG_CXX
 AC_PROG_LIBTOOL
 
 PKG_CHECK_MODULES([sdl], [sdl])
-PKG_CHECK_MODULES([libgamemusic], [libgamemusic], [HAVE_MUSIC=1], [HAVE_MUSIC=0])
+
+AC_ARG_WITH([libgamemusic],
+	[AS_HELP_STRING([--with-libgamemusic],
+	[play CMF background music @<:@default=check@:>@])],
+	[],
+	[with_libgamemusic=check]
+)
+
+HAVE_MUSIC=0
+AS_IF([test "x$with_libgamemusic" != xno], [
+	PKG_CHECK_MODULES([libgamemusic], [libgamemusic < 2.0], [
+		HAVE_MUSIC=1
+	], [
+		if test "x$with_libgamemusic" != xcheck; then
+			AC_MSG_FAILURE(
+				[--with-libgamemusic was given, but test for libgamemusic failed])
+		fi
+	])
+])
 
 AM_CONDITIONAL([USE_MUSIC], [test "$HAVE_MUSIC" -eq 1])
 
@@ -30,3 +48,9 @@ AM_CONDITIONAL([USE_MUSIC], [test "$HAVE_MUSIC" -eq 1])
 AM_SILENT_RULES([yes])
 
 AC_OUTPUT(Makefile src/Makefile)
+
+AS_IF([test "$HAVE_MUSIC" -ne 1], [
+	echo ""
+	echo "libgamemusic v1.x not found or disabled, you will have no background music"
+	echo ""
+])
